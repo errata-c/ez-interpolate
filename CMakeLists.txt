@@ -17,8 +17,10 @@ target_include_directories(ez-interpolate INTERFACE "$<INSTALL_INTERFACE:include
 target_link_libraries(ez-interpolate INTERFACE glm)
 target_compile_features(ez-interpolate INTERFACE cxx_std_17)
 
+set_target_properties(ez-interpolate PROPERTIES EXPORT_NAME "interpolate")
+
 if(${BUILD_TESTS})
-	add_subdirectory("test")
+	#add_subdirectory("test")
 endif()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/ez-interpolate)
@@ -39,6 +41,7 @@ install(TARGETS ez-interpolate
 
 install_package(
 	NAME "ez-interpolate"
+	NAMESPACE "ez::"
 	EXPORT "ez-interpolate-targets"
 	VERSION "${EZ_INTERPOLATE_VERSION}"
 	COMPATIBILITY "SameMajorVersion"
