@@ -1,11 +1,11 @@
 #pragma once
+#include <ez/meta.hpp>
 #include <vector>
 #include <cinttypes>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <type_traits>
-#include "intern/PointType.hpp"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -33,14 +33,20 @@ namespace ez {
 	Manipulating point clouds locally is easier than manipulating bezier curves, its just the transistions to new region on the cloud that is more difficult
 	Derivatives can be calculated easily using automatic differentiation.
 	*/
-	template<typename T, std::size_t N>
+	template<typename vec_t>
 	class SortedPointCloud {
 	public:
+		static_assert(ez::is_vec_v<vec_t>, "SortedPointCloud requires a vector type!");
+		
+		using index_t = std::intptr_t;
+		using size_t = std::size_t;
+
+		using real_t = typename ez::vec_traits<vec_t>::value_type;
+		static constexpr size_t N = ez::vec_traits<vec_t>::length;
+
+		static_assert(std::is_floating_point_v<real_t>, "SortedPointCloud requires floating point types!");
+
 		struct Dimension;
-		using index_t = typename std::intptr_t;
-		using size_type = index_t;
-		using real_t = T;
-		using vec_t = typename intern::Point<T, N>::type;
 
 		struct Knot {
 			Knot()

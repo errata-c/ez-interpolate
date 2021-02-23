@@ -1,11 +1,11 @@
 #pragma once
+#include <ez/meta.hpp>
 #include <vector>
 #include <cinttypes>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <type_traits>
-#include "intern/PointType.hpp"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -33,14 +33,14 @@ namespace ez {
 	Manipulating point clouds locally is easier than manipulating bezier curves, its just the transistions to new region on the cloud that is more difficult
 	Derivatives can be calculated easily using automatic differentiation.
 	*/
-	template<typename T, std::size_t N>
+	template<typename vec_t>
 	class PointCloud {
 	public:
 		struct Dimension;
-		using index_t = typename std::intptr_t;
-		using size_type = index_t;
-		using real_t = T;
-		using vec_t = typename intern::Point<T, N>::type;
+		using index_t = std::intptr_t;
+		using size_type = std::size_t;
+		using real_t = ez::vec_value_t<vec_t>;
+		static constexpr size_t N = ez::vec_length_v<vec_t>;
 
 		struct Knot {
 			Knot()
@@ -58,6 +58,7 @@ namespace ez {
 			// The tangent for this knot, defines the direction the evaluated position is offset when approaching this knot.
 			vec_t tangent;
 		};
+
 		class Point: public std::vector<Knot> {
 		public:
 			using iterator = typename std::vector<Knot>::iterator;
