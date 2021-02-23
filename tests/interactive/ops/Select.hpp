@@ -5,27 +5,28 @@
 #include <fmt/printf.h>
 
 class Context;
-class Select : public ez::Operator {
+class Select : public ez::Operator<Context> {
 public:
-	using Result = ez::Operator::Result;
+	using Result = ez::OpResult;
 
-	Select(Context& ctx)
-		: ez::Operator("select")
-		, context(ctx)
+	Select()
+		: Operator("select")
 	{}
 
-	bool poll() const override {
+	bool poll(const Context & context) const override {
 		return context.hasReduction();
 	}
 
-	Result execute() override {
-		return Result::PASS_THROUGH;
+	Result execute(Context& context) override {
+		return Result::PassThrough;
 	}
 
-	Result invoke(const ez::InputState& state) override {
-		if (state.type == ez::InputEventType::MousePress && state.mouseJustPressed == ez::Mouse::Button1) {
+	Result invoke(const ez::InputState& state, Context& context) override {
+		if (state.type == ez::InputEventType::MousePress && state.mouse.justPressed == ez::Mouse::Left) {
+			
+
 			glm::vec2 mpos = state.mouse.position;
-			ez::PointCloud<float, 2>& reduce = context.getReduction();
+			ez::PointCloud<glm::vec2>& reduce = context.getReduction();
 
 			std::ptrdiff_t select = -1;
 			float dist1 = 5.f;
@@ -42,17 +43,15 @@ public:
 
 			if (select != -1) {
 				context.setControlSelect(select);
-				
-				return Result::FINISHED;
+
+				return Result::Finished;
 			}
 			else {
-				return Result::PASS_THROUGH;
+				return Result::PassThrough;
 			}
 		}
 		else {
-			return Result::PASS_THROUGH;
+			return Result::PassThrough;
 		}
 	}
-private:
-	Context& context;
 };

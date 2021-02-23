@@ -1,19 +1,19 @@
 #pragma once
+#include <ez/meta.hpp>
 #include <cassert>
 #include <vector>
 #include <cinttypes>
 #include <algorithm>
-#include "intern/PointType.hpp"
-
 
 namespace ez {
-	template<typename T, int N>
+	template<typename vec_t>
 	class PointTrace {
 	public:
-		using index_t = typename std::ptrdiff_t;
+		using size_t = std::size_t;
+		using index_t = std::ptrdiff_t;
 
-		using real_t = T;
-		using vec_t = typename intern::Point<T, N>::type;
+		using real_t = ez::vec_value_t<vec_t>;
+		static constexpr size_t N = ez::vec_length_v<vec_t>;
 
 		struct Knot {
 			real_t position;
@@ -100,7 +100,7 @@ namespace ez {
 			return points[index].value;
 		}
 
-		vec_t eval(T t) const {
+		vec_t eval(real_t t) const {
 			if (numPoints() == 0) {
 				return vec_t(0);
 			}
@@ -170,37 +170,37 @@ namespace ez {
 		container_t points;
 	};
 
-	template<typename T, int N>
-	bool operator<(const typename PointTrace<T,N>::Point& point, float other) {
+	template<typename T>
+	bool operator<(const typename PointTrace<T>::Point& point, float other) {
 		return point.knot.position < other;
 	}
-	template<typename T, int N>
-	static bool operator<=(const typename PointTrace<T, N>::Point& point, float other) {
+	template<typename T>
+	static bool operator<=(const typename PointTrace<T>::Point& point, float other) {
 		return point.knot.position <= other;
 	}
-	template<typename T, int N>
-	static bool operator>(const typename PointTrace<T, N>::Point& point, float other) {
+	template<typename T>
+	static bool operator>(const typename PointTrace<T>::Point& point, float other) {
 		return point.knot.position > other;
 	}
-	template<typename T, int N>
-	static bool operator>=(const typename PointTrace<T, N>::Point& point, float other) {
+	template<typename T>
+	static bool operator>=(const typename PointTrace<T>::Point& point, float other) {
 		return point.knot.position >= other;
 	}
 
-	template<typename T, int N>
-	static bool operator<(float other, const typename PointTrace<T, N>::Point& point) {
+	template<typename T>
+	static bool operator<(float other, const typename PointTrace<T>::Point& point) {
 		return other < point.knot.position;
 	}
-	template<typename T, int N>
-	static bool operator<=(float other, const typename PointTrace<T, N>::Point& point) {
+	template<typename T>
+	static bool operator<=(float other, const typename PointTrace<T>::Point& point) {
 		return other <= point.knot.position;
 	}
-	template<typename T, int N>
-	static bool operator>(float other, const typename PointTrace<T, N>::Point& point) {
+	template<typename T>
+	static bool operator>(float other, const typename PointTrace<T>::Point& point) {
 		return other > point.knot.position;
 	}
-	template<typename T, int N>
-	static bool operator>=(float other, const typename PointTrace<T, N>::Point& point) {
+	template<typename T>
+	static bool operator>=(float other, const typename PointTrace<T>::Point& point) {
 		return other >= point.knot.position;
 	}
 };

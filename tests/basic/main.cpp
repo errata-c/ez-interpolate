@@ -5,7 +5,7 @@
 int main() {
 	fmt::print("Hello, World!\n");
 
-	ez::PointCloud<float, 2> cloud;
+	ez::PointCloud<glm::vec2> cloud;
 
 	return 0;
 }

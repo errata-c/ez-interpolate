@@ -12,7 +12,7 @@ Context::Context()
 
 	glm::vec2 point{50, 300};
 	for (int i = 0; i < 5; ++i) {
-		ez::PointCloud<float, 2>& reduce = reduction[i];
+		ez::PointCloud<glm::vec2>& reduce = reduction[i];
 		reduce.resizeInputs(3);
 		reduce.push_back(point);
 
@@ -31,7 +31,7 @@ bool Context::hasPointSelect() const {
 }
 void Context::setPointSelect(std::ptrdiff_t i) {
 	if (i >= 0) {
-		pointSelect = std::max(std::ptrdiff_t(0), std::min(i, numPoints()));
+		pointSelect = std::max(std::ptrdiff_t(0), std::min(i, numPoints()-1));
 		controlSelect = -1;
 	}
 	else {
@@ -89,18 +89,18 @@ std::ptrdiff_t Context::numInputs() const {
 bool Context::hasReduction() const {
 	return hasPointSelect();
 }
-ez::PointCloud<float, 2>& Context::getReduction() {
+ez::PointCloud<glm::vec2>& Context::getReduction() {
 	assert(hasReduction());
 	return reduction[pointSelect];
 }
-const ez::PointCloud<float, 2>& Context::getReduction() const {
+const ez::PointCloud<glm::vec2>& Context::getReduction() const {
 	assert(hasReduction());
 	return reduction[pointSelect];
 }
 
 void Context::buildCurve() {
 	curve.clear();
-	for (ez::PointCloud<float, 2> & reduce : reduction) {
+	for (ez::PointCloud<glm::vec2> & reduce : reduction) {
 		glm::vec2 result = reduce.eval(inputs.begin(), inputs.end());
 		curve.push_back(result);
 	}

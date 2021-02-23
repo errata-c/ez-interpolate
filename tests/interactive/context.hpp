@@ -23,8 +23,8 @@ public:
 	std::ptrdiff_t numInputs() const;
 
 	bool hasReduction() const;
-	ez::PointCloud<float, 2>& getReduction();
-	const ez::PointCloud<float, 2>& getReduction() const;
+	ez::PointCloud<glm::vec2>& getReduction();
+	const ez::PointCloud<glm::vec2>& getReduction() const;
 
 	void buildCurve();
 	std::vector<glm::vec2>& getCurve();
@@ -34,7 +34,7 @@ public:
 	const std::vector<float>& getInputs() const;
 private:
 	std::ptrdiff_t pointSelect, controlSelect, inputSelect;
-	std::deque<ez::PointCloud<float, 2>> reduction;
+	std::deque<ez::PointCloud<glm::vec2>> reduction;
 
 	std::vector<float> inputs;
 	std::vector<glm::vec2> curve;
