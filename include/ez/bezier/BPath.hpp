@@ -101,7 +101,11 @@ namespace ez {
 		}
 
 		Segment segmentAt(size_type i) const {
-			static constexpr real_t lower(8.0 / 12.0), upper(4.0 / 12.0);
+			static constexpr real_t lower(8 / 12.0);
+			static constexpr real_t upper = real_t(1) - lower;
+
+			static constexpr real_t b = real_t{ 9 } / real_t{ 12 };
+			static constexpr real_t a = (1.0 - b) / 2.0;
 
 			assert(i < numSegments());
 			Segment seg;
@@ -113,51 +117,37 @@ namespace ez {
 					i1 = pointIndex(i + 1),
 					i2 = pointIndex(i + 2),
 					i3 = pointIndex(i + 3),
-					i4 = pointIndex(i + 4),
-					i5 = pointIndex(i + 5);
+					i4 = pointIndex(i + 4);
 
-				p0 = ez::bezier::interpolate(points[i], points[i1], points[i1], points[i2], real_t{ 0.5 });
-				p1 = ez::bezier::interpolate(points[i1], points[i2], points[i3], points[i4], real_t{ 0.5 });
-				p2 = ez::bezier::interpolate(points[i2], points[i3], points[i4], points[i5], real_t{ 0.5 });
+				p0 = points[i ] * a + points[i1] * b + points[i2] * a;
+				p1 = points[i1] * a + points[i2] * b + points[i3] * a;
+				p2 = points[i2] * a + points[i3] * b + points[i4] * a;
 			}
 			else {
 				if (i == 0) {
 					// first segment
 					p0 = points[0];
-					p1 = ez::bezier::interpolate(points[0], points[1], points[2], points[3], real_t{ 0.5 });
-					p2 = ez::bezier::interpolate(points[1], points[2], points[3], points[4], real_t{ 0.5 });
+					p1 = points[0]*a + points[1]*b + points[2]*a;
+					p2 = points[1]*a + points[2]*b + points[3]*a;
 				}
-				else if (i == (numPoints() - 4)) {
+				else if (i == (numPoints() - 3)) {
 					// last segment
-					p0 = ez::bezier::interpolate(
-						points[points.size() - 5],
-						points[points.size() - 4],
-						points[points.size() - 3],
-						points[points.size() - 2],
-						real_t{ 0.5 });
-
-					p1 = ez::bezier::interpolate(
-						points[points.size() - 4],
-						points[points.size() - 3],
-						points[points.size() - 2],
-						points[points.size() - 1],
-						real_t{ 0.5 });
-
+					p0 = points[points.size() - 4]*a + points[points.size() - 3]*b + points[points.size() - 2]*a;
+					p1 = points[points.size() - 3]*a + points[points.size() - 2]*b + points[points.size() - 1]*a;
 					p2 = points[points.size() - 1];
 				}
 				else {
 					// middle segment
-					i = i - 1;
+					i -= 1;
 					size_type
 						i1 = (i + 1),
 						i2 = (i + 2),
 						i3 = (i + 3),
-						i4 = (i + 4),
-						i5 = (i + 5);
+						i4 = (i + 4);
 
-					p0 = ez::bezier::interpolate(points[i], points[i1], points[i1], points[i2], real_t{ 0.5 });
-					p1 = ez::bezier::interpolate(points[i1], points[i2], points[i3], points[i4], real_t{ 0.5 });
-					p2 = ez::bezier::interpolate(points[i2], points[i3], points[i4], points[i5], real_t{ 0.5 });
+					p0 = points[i ] * a + points[i1] * b + points[i2] * a;
+					p1 = points[i1] * a + points[i2] * b + points[i3] * a;
+					p2 = points[i2] * a + points[i3] * b + points[i4] * a;
 				}
 			}
 
@@ -173,7 +163,7 @@ namespace ez {
 		size_type numSegments() const {
 			if (points.size() > 3) {
 				if (isOpen()) {
-					return points.size() - size_type(3);
+					return points.size() - size_type(2);
 				}
 				else {
 					return points.size();
