@@ -4,7 +4,6 @@
 #include <glm/vec2.hpp>
 #include <fmt/format.h>
 #include <ez/bezier/BPath.hpp>
-#include <ez/bezier/CPath.hpp>
 #include <ez/bezier/Bezier.hpp>
 
 #include <ez/gl.hpp>
