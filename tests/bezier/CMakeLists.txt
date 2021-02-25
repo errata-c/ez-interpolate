@@ -21,5 +21,5 @@ target_link_libraries(bezier_test_common INTERFACE
 
 #add_subdirectory("fitting")
 add_subdirectory("offset")
-add_subdirectory("qpath")
+add_subdirectory("bpath")
 add_subdirectory("knots")
