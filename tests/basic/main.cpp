@@ -1,11 +1,10 @@
 #include <fmt/format.h>
 #include <ez/interpolate/PointCloud.hpp>
-#include <ez/interpolate/PointTrace.hpp>
 
 int main() {
 	fmt::print("Hello, World!\n");
 
-	ez::PointCloud<glm::vec2> cloud;
+	ez::PointCloud<float, 1, 2> cloud;
 
 	return 0;
 }

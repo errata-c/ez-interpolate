@@ -1,31 +1,20 @@
 #pragma once
 #include <ez/meta.hpp>
+#include <ez/math/constants.hpp>
+
 #include <vector>
 #include <cinttypes>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
-#include <type_traits>
+#include <array>
+
+#include <glm/geometric.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 namespace ez {
-	namespace intern {
-		template<typename real_t, typename vec_t>
-		struct Dist {
-			real_t value;
-			vec_t position;
-		};
-		template<typename real_t, typename vec_t>
-		static bool operator<(const Dist<real_t, vec_t>& left, const Dist<real_t, vec_t>& right) {
-			return left.value < right.value;
-		};
-		template<typename real_t, typename vec_t>
-		static bool operator>(const Dist<real_t, vec_t>& left, const Dist<real_t, vec_t>& right) {
-			return left.value > right.value;
-		};
-	};
 
 	/*
 	Interpolation using a cloud of points.
@@ -33,51 +22,48 @@ namespace ez {
 	Manipulating point clouds locally is easier than manipulating bezier curves, its just the transistions to new region on the cloud that is more difficult
 	Derivatives can be calculated easily using automatic differentiation.
 	*/
-	template<typename vec_t>
+	template<typename T, int InDim, int OutDim>
 	class PointCloud {
 	public:
+		static_assert(InDim > 0 && InDim <= 4, "Input Dimension is out of range!");
+		static_assert(OutDim > 0 && OutDim <= 4, "Output Dimension is out of range!");
+
+		using real_t = T;
+		using ovec = std::conditional_t<OutDim == 1, T, glm::vec<OutDim, T>>;
+		using ivec = std::conditional_t<InDim == 1, T, glm::vec<InDim, T>>;
+
 		struct Dimension;
 		using index_t = std::intptr_t;
-		using size_type = std::size_t;
-		using real_t = ez::vec_value_t<vec_t>;
-		static constexpr size_t N = ez::vec_length_v<vec_t>;
+		using size_t = std::size_t;
 
-		struct Knot {
-			Knot()
-				: position(0)
-				, domain(1)
-				, tangent(0)
+		struct Point {
+			Point()
+				: position{ T(0) }
+				, domain{ T(1) }
+				, tangent{ ovec{ T(0) } }
 			{}
 
-			// The interpolation value this knot is resting at. (input offset essentially)
-			real_t position;
+			Point(ivec p, ovec v)
+				: position{ p }
+				, domain{ T(1) }
+				, tangent{ ovec{ T(0) } }
+				, output(v)
+			{}
+
+			// The interpolation value this knot is resting at.
+			ivec position;
 
 			// The scale factor for this knots input value.
-			real_t domain;
+			ivec domain;
+			
+			// Tangents along each input dimension.
+			std::array<ovec, InDim> tangent;
 
-			// The tangent for this knot, defines the direction the evaluated position is offset when approaching this knot.
-			vec_t tangent;
-		};
-
-		class Point: public std::vector<Knot> {
-		public:
-			using iterator = typename std::vector<Knot>::iterator;
-			using const_iterator = typename std::vector<Knot>::const_iterator;
-
-			Point()
-				: value(0)
-			{}
-			Point(vec_t val, index_t count)
-				: value(val)
-				, std::vector<Knot>(count)
-			{}
-
-			Point(const Point&) = default;
-			Point(Point&&) noexcept = default;
-			Point& operator=(const Point&) = default;
-			Point& operator=(Point&&) noexcept = default;
-
-			vec_t value;
+			// The output point at this input position.
+			ovec output;
+		private:
+			mutable real_t cache;
+			friend class PointCloud;
 		};
 
 		using container_t = std::vector<Point>;
@@ -90,36 +76,24 @@ namespace ez {
 		PointCloud& operator=(PointCloud&&) noexcept = default;
 		
 		PointCloud()
-			: inputs(0)
 		{}
 
-		PointCloud(index_t pointCount, index_t inputCount)
-			: inputs(inputCount)
-			, points(pointCount, Point(vec_t{0}, inputCount))
+		PointCloud(std::size_t cap)
+			: points{cap}
 		{}
 
-		void setKnot(index_t pointIndex, index_t inputIndex, Knot value) {
-			getKnot(pointIndex, inputIndex) = value;
+		static constexpr int inputDimensions() {
+			return InDim;
+		}
+		static constexpr int outputDimensions() {
+			return OutDim;
 		}
 
-		Knot& getKnot(index_t pointIndex, index_t inputIndex) {
-			assert(pointIndex >= 0 && pointIndex < numPoints());
-			assert(inputIndex >= 0 && inputIndex < numInputs());
-
-			return points[pointIndex][inputIndex];
+		void push_back(ivec input, ovec output) {
+			points.push_back(Point(input, output));
 		}
-		const Knot& getKnot(index_t pointIndex, index_t inputIndex) const {
-			assert(pointIndex >= 0 && pointIndex < numPoints());
-			assert(inputIndex >= 0 && inputIndex < numInputs());
-
-			return points[pointIndex][inputIndex];
-		}
-
-		void push_back(vec_t value) {
-			points.push_back(Point(value, inputs));
-		}
-		void append(vec_t value) {
-			points.push_back(Point(value, inputs));
+		void append(ivec input, ovec output) {
+			points.push_back(Point(input, output));
 		}
 		void pop_back() {
 			points.pop_back();
@@ -127,67 +101,31 @@ namespace ez {
 		void erase(const_iterator iter) {
 			points.erase(iter);
 		}
-		void insert(iterator iter, vec_t value) {
-			points.insert(iter, Point(value, inputs));
+		void insert(iterator iter, const Point & value) {
+			points.insert(iter, value);
 		}
-		void resizePoints(index_t count) {
-			assert(count >= 0);
-
-			index_t excess = count - points.size();
-			if (excess < 0) { // There are now less points.
-				points.resize(count);
-			}
-			else { // There are now more points
-				for (index_t i = 0; i < excess; ++i) {
-					points.push_back(Point{ vec_t{0}, inputs });
-				}
-			}
+		void resize(std::size_t count) {
+			points.resize(count);
 		}
 
-		void resizeInputs(index_t count) {
-			assert(count >= 0);
-			
-			for (Point& point : points) {
-				point.resize(count);
-			}
-			inputs = count;
-		}
-
-		Point& operator[](std::intptr_t index) {
-			assert(index >= 0 && index < numPoints());
+		Point& operator[](std::size_t index) {
+			assert(index < size());
 			return points[index];
 		}
-		const Point& operator[](std::intptr_t index) const {
-			assert(index >= 0 && index < numPoints());
+		const Point& operator[](std::size_t index) const {
+			assert(index < size());
 			return points[index];
 		}
 
-		vec_t& getPoint(index_t index) {
-			assert(index >= 0 && index < numPoints());
-			return points[index].value;
+		std::size_t size() const {
+			return points.size();
 		}
-		const vec_t& getPoint(index_t index) const {
-			assert(index >= 0 && index < numPoints());
-			return points[index].value;
-		}
-		void setPoint(index_t index, vec_t point) {
-			assert(index >= 0 && index < numPoints());
-			points[index].value = point;
-		}
-
-		index_t size() const {
-			return static_cast<index_t>(points.size());
-		}
-		index_t numPoints() const {
-			return static_cast<index_t>(points.size());
-		}
-		index_t numInputs() const {
-			return inputs;
+		std::size_t numPoints() const {
+			return points.size();
 		}
 
 		void clear() {
 			points.clear();
-			inputs = 0;
 		}
 
 		iterator begin() {
@@ -203,60 +141,58 @@ namespace ez {
 		const_iterator end() const {
 			return points.end();
 		}
-	private:
-		index_t inputs;
-		// The interpolation points.
-		std::vector<Point> points;
 
-		template<typename Iter>
-		vec_t evalImpl(Iter inFirst, Iter inLast) const {
-			using namespace ez::intern;
-
-			vec_t result(0);
+		ovec eval(ivec input) const {
+			ovec result(0);
 			real_t sum = real_t(0);
 
-			// Calculate all the distances
-			for (const_iterator pointIter = begin(), last = end(); pointIter != last; ++pointIter) {
-				real_t value = real_t(0);
-				vec_t position = pointIter->value;
+			// We calculate the coefficient, add it to the sum, then cache the coefficient for the second pass
+			for (const Point& point : points) {
+				ivec delta = input - point.position;
 
-				Iter it = inFirst;
-				for (const Knot& knot : *pointIter) {
-					assert(it != inLast);
-					
-					// The domain scaling occurs only along this particular knots dimension.
-					real_t tmp = (knot.position - *it);
-					tmp = tmp * tmp;
-					value += knot.domain * tmp;
-					
-					tmp =  real_t(1) - real_t(1) / (tmp * tmp + real_t(1));
+				delta = point.domain * delta * delta;
 
-					position += knot.tangent * tmp;
-
-					++it;
+				real_t coeff = 0.f;
+				if constexpr (InDim == 1) {
+					coeff = delta;
+				}
+				else {
+					for (int i = 0; i < InDim; ++i) {
+						coeff += delta[i];
+					}
 				}
 
-				value = real_t(1) / (real_t(0.00001) + value);
+				// We add an epsilion value to prevent division by zero
+				coeff = real_t(1) / (ez::epsilon<real_t>() + coeff);
 
-				result += position * value;
-				sum += value;
+				sum += coeff;
+				point.cache = coeff;
 			}
 
-			if (sum >= real_t(1E-5)) {
-				result /= sum;
+			// normalize the influence factors, sum result vector
+			for (const Point& point : points) {
+				ivec delta = input - point.position;
+
+				// normalization, note that if sum == inf, then most likely at least one point.cache == inf.
+				// So the factor will == 1 for at least one point.
+				real_t factor = point.cache / sum;
+
+				ovec offset{0.f};
+				if constexpr (InDim == 1) {
+					offset = point.tangent[0] * delta;
+				}
+				else {
+					for (int i = 0; i < InDim; ++i) {
+						offset += point.tangent[i] * delta[i];
+					}
+				}
+
+				result += (point.output + offset) * factor;
 			}
-			
 			return result;
 		}
-	public:
-		vec_t eval(real_t * begin, real_t * end) const {
-			return evalImpl(begin, end);
-		}
 
-		template<typename Iter>
-		vec_t eval(Iter begin, Iter end) const {
-			static_assert(std::is_convertible<typename Iter::value_type, real_t>::value, "The iterator passed into ez::PointCloud does not have convertible value type.");
-			return evalImpl(begin, end);
-		}
+	private:
+		std::vector<Point> points;
 	};
 };

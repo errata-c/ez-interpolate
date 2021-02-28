@@ -3,8 +3,42 @@
 #include <deque>
 #include <ez/interpolate/PointCloud.hpp>
 
+struct Select {
+	static constexpr std::size_t None = ~std::size_t(0);
+	
+	Select(const Select&) noexcept = default;
+	Select& operator=(const Select&) noexcept = default;
+	~Select() = default;
+
+	Select() noexcept
+		: index(None)
+	{}
+	Select(std::size_t i) noexcept
+		: index(i)
+	{}
+
+	void reset() noexcept {
+		index = None;
+	}
+	void reset(std::size_t i) noexcept {
+		index = i;
+	}
+
+	std::size_t get() const noexcept {
+		return index;
+	}
+
+	explicit operator bool() const noexcept {
+		return index != None;
+	}
+
+	std::size_t index;
+};
+
 class Context {
 public:
+	using Reduction = ez::PointCloud<float, 1, 2>;
+
 	Context();
 
 	bool hasPointSelect() const;
@@ -23,19 +57,15 @@ public:
 	std::ptrdiff_t numInputs() const;
 
 	bool hasReduction() const;
-	ez::PointCloud<glm::vec2>& getReduction();
-	const ez::PointCloud<glm::vec2>& getReduction() const;
+	Reduction& getReduction();
+	const Reduction& getReduction() const;
 
 	void buildCurve();
 	std::vector<glm::vec2>& getCurve();
 	const std::vector<glm::vec2>& getCurve() const;
-
-	std::vector<float>& getInputs();
-	const std::vector<float>& getInputs() const;
 private:
 	std::ptrdiff_t pointSelect, controlSelect, inputSelect;
-	std::deque<ez::PointCloud<glm::vec2>> reduction;
+	std::deque<Reduction> reduction;
 
-	std::vector<float> inputs;
 	std::vector<glm::vec2> curve;
 };

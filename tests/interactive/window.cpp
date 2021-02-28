@@ -10,30 +10,32 @@ struct NVGcontext;
 
 #include "imgui.h"
 
+enum State {
+	None,
+	MovingPoint,
+	MovingTangent,
+};
+
 Window::Window(std::string_view _title, glm::ivec2 size, ez::window::Style _style, const ez::window::RenderSettings& rs)
 	: ez::window::Window(_title, size, _style, rs)
-	, gui(context)
 	, nvgContext(nullptr)
 	, imguiContext(*this)
-{	
-	ops.add(new AddPoint{});
-	ops.add(new DragPoint{});
-	ops.add(new DragTangent{});
-	ops.add(new Select{});
-
-	inputMan.setKeyMap(keymap);
-
-	keymap.add(ez::KeyMods::None, ez::Key::T, "drag_tangent");
-	keymap.add(ez::KeyMods::None, ez::Key::G, "drag_point");
-	keymap.add(ez::KeyMods::None, ez::Key::None, "select");
-	keymap.add(ez::KeyMods::None, ez::Key::A, "add_point");
-
+	, index{0}
+	, tangent(0)
+	, state(State::None)
+{
 	setActive(true);
 	ez::gl::load();
 
 	nvgContext = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
 	ImGui::StyleColorsDark();
+
+	pointcloud.append(0.f,   glm::vec2{ 100, 100 });
+	pointcloud.append(0.25f, glm::vec2{ 200, 200 });
+	pointcloud.append(0.5f,  glm::vec2{ 300, 300 });
+	pointcloud.append(0.75f, glm::vec2{ 400, 400 });
+	pointcloud.append(1.f,   glm::vec2{ 500, 500 });
 }
 Window::~Window()
 {}
@@ -44,11 +46,44 @@ void Window::handleInput() {
 	ez::InputEvent ev;
 	while (pollInput(ev)) {
 		imguiContext.processEvent(ev);
-
-		inputMan.handleEvent(ev, context, ops);
+		if (!ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
+			handleEvent(ev);
+		}
 
 		if (ev.type == ez::InEv::Closed) {
 			close();
+		}
+	}
+}
+void Window::handleEvent(const ez::InputEvent& ev) {
+	if (index == pointcloud.size()) {
+		return;
+	}
+
+	if (ev.type == ez::InEv::MousePress) {
+		if (state == State::None) {
+			if (ev.mouse.button == ez::Mouse::Left) {
+				state = State::MovingPoint;
+			}
+			else if(ev.mouse.button == ez::Mouse::Right) {
+				state = State::MovingTangent;
+			}
+		}
+	}
+	else if(ev.type == ez::InEv::MouseRelease) {
+		if (state == State::MovingPoint && ev.mouse.button == ez::Mouse::Left) {
+			state = State::None;
+		}
+		else if (state == State::MovingTangent && ev.mouse.button == ez::Mouse::Right) {
+			state = State::None;
+		}
+	}
+	else if(ev.type == ez::InEv::MouseMove) {
+		if (state == State::MovingPoint) {
+			pointcloud[index].output = ev.mouse.position;
+		}
+		else if (state == State::MovingTangent) {
+			pointcloud[index].tangent[0] = 3.f * (glm::vec2{ ev.mouse.position } - pointcloud[index].output);
 		}
 	}
 }
@@ -57,7 +92,14 @@ void Window::draw() {
 	imguiContext.newFrame(*this);
 
 	if (ImGui::Begin("Edit")) {
-		gui.draw();
+		ImGui::Text("Left click anywhere in the scene to move the active point.");
+		ImGui::Text("Right click to drag out a tangent from the active point.");
+
+		ImGui::DragInt("Index", &index, 0.0625f, 0, pointcloud.size());
+
+		if (index != pointcloud.size()) {
+			ImGui::DragFloat("domain", &pointcloud[index].domain, 0.5f, 1e-5f, 100.f, "%.4f", ImGuiSliderFlags_Logarithmic);
+		}
 	}
 	ImGui::End();
 
@@ -65,69 +107,45 @@ void Window::draw() {
 	glm::vec2 frame = getViewportSize();
 
 	NVGcontext* vg = nvgContext;
-	context.buildCurve();
-	const std::vector<glm::vec2>& curve = context.getCurve();
 
 	glClearColor(0.9, 0.9, 0.9, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	nvgBeginFrame(vg, window.x, window.y, frame.x / window.x);
 
-	if (curve.size() > 0) {
-		nvgBeginPath(vg);
-		nvgStrokeColor(vg, nvgRGBf(0, 0, 1));
-		nvgStrokeWidth(vg, 5.f);
+	glm::vec2 p = pointcloud.eval(0.f);
+	nvgBeginPath(vg);
+	nvgMoveTo(vg, p.x, p.y);
 
-		glm::vec2 point = curve.front();
-
-		nvgMoveTo(vg, point.x, point.y);
-		for (int i = 1; i < curve.size(); ++i) {
-			point = curve[i];
-			nvgLineTo(vg, point.x, point.y);
-		}
-		nvgStroke(vg);
+	float delta = 1.f / 100.f;
+	for (float t = delta; t < 1.f; t += delta) {
+		p = pointcloud.eval(t);
+		nvgLineTo(vg, p.x, p.y);
 	}
+	p = pointcloud.eval(1.f);
+	nvgLineTo(vg, p.x, p.y);
 
-	if (context.hasPointSelect()) {
-		ez::PointCloud<glm::vec2>& reduce = context.getReduction();
+	nvgStrokeColor(vg, nvgRGB(0, 0, 0));
+	nvgStroke(vg);
 
-		nvgFillColor(vg, nvgRGBf(0, 1, 0));
+	if (index != pointcloud.size()) {
+		glm::vec2 selected = pointcloud[index].output;
 
-		for (std::ptrdiff_t i = 0; i < reduce.numPoints(); ++i) {
-			glm::vec2 point = reduce.getPoint(i);
-
+		glm::vec2 dir = pointcloud[index].tangent[0];
+		if (glm::length(dir) > 6) {
 			nvgBeginPath(vg);
-			nvgArc(vg, point.x, point.y, 5.f, 0, ez::tau<float>(), NVG_CCW);
-			nvgFill(vg);
-		}
-
-		if (context.hasInputSelect()) {
-			std::ptrdiff_t inputSelect = context.getInputSelect();
-
-			nvgStrokeColor(vg, nvgRGBf(0.6f, 0.3, 0.7f));
-			nvgStrokeWidth(vg, 3.f);
-
-			for (std::ptrdiff_t i = 0; i < reduce.numPoints(); ++i) {
-				glm::vec2 tangent = reduce.getKnot(i, inputSelect).tangent;
-				glm::vec2 point = reduce.getPoint(i);
-
-				nvgBeginPath(vg);
-				nvgMoveTo(vg, point.x, point.y);
-				nvgLineTo(vg, point.x + tangent.x, point.y + tangent.y);
-				nvgStroke(vg);
-			}
-		}
-
-		std::ptrdiff_t select = context.getControlSelect();
-		if (select != -1) {
-			glm::vec2 point = reduce.getPoint(select);
-
-			nvgBeginPath(vg);
-			nvgStrokeWidth(vg, 2.f);
-			nvgStrokeColor(vg, nvgRGB(255, 0, 0));
-			nvgArc(vg, point.x, point.y, 7.f, 0, ez::tau<float>(), NVG_CCW);
+			nvgMoveTo(vg, selected.x, selected.y);
+			glm::vec2 ep = selected + dir / 3.f;
+			nvgLineTo(vg, ep.x, ep.y);
+			nvgStrokeColor(vg, nvgRGB(0, 255, 0));
 			nvgStroke(vg);
 		}
+
+		nvgBeginPath(vg);
+		//nvgMoveTo(vg, selected.x, selected.y);
+		nvgArc(vg, selected.x, selected.y, 5, 0.f, ez::tau<float>(), NVG_CW);
+		nvgFillColor(vg, nvgRGB(255, 0, 0));
+		nvgFill(vg);
 	}
 
 	nvgEndFrame(vg);
