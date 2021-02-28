@@ -79,42 +79,26 @@ void Context::setInputSelect(std::ptrdiff_t i) {
 		inputSelect = -1;
 	}
 }
-std::ptrdiff_t Context::getInputSelect() const {
-	return inputSelect;
-}
-std::ptrdiff_t Context::numInputs() const {
-	return static_cast<std::ptrdiff_t>(inputs.size());
-}
 
 bool Context::hasReduction() const {
 	return hasPointSelect();
 }
-ez::PointCloud<glm::vec2>& Context::getReduction() {
+Context::Reduction& Context::getReduction() {
 	assert(hasReduction());
 	return reduction[pointSelect];
 }
-const ez::PointCloud<glm::vec2>& Context::getReduction() const {
+const Context::Reduction& Context::getReduction() const {
 	assert(hasReduction());
 	return reduction[pointSelect];
 }
 
 void Context::buildCurve() {
 	curve.clear();
-	for (ez::PointCloud<glm::vec2> & reduce : reduction) {
-		glm::vec2 result = reduce.eval(inputs.begin(), inputs.end());
-		curve.push_back(result);
-	}
+	
 }
 std::vector<glm::vec2>& Context::getCurve() {
 	return curve;
 }
 const std::vector<glm::vec2>& Context::getCurve() const {
 	return curve;
-}
-
-std::vector<float>& Context::getInputs() {
-	return inputs;
-}
-const std::vector<float>& Context::getInputs() const {
-	return inputs;
 }

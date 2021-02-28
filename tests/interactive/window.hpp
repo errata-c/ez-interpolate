@@ -5,13 +5,7 @@
 
 #include <ez/imgui/Context.hpp>
 
-#include "context.hpp"
-#include "gui.hpp"
-
-#include "ops/AddPoint.hpp"
-#include "ops/DragPoint.hpp"
-#include "ops/DragTangent.hpp"
-#include "ops/Select.hpp"
+#include <ez/interpolate/PointCloud.hpp>
 
 class Window: public ez::window::Window {
 public:
@@ -19,15 +13,15 @@ public:
 	~Window();
 
 	void handleInput() override;
+	void handleEvent(const ez::InputEvent& ev);
 	void draw() override;
+
 private:
-	ez::InputEngine inputMan;
-	ez::KeyMap keymap;
-	ez::OperatorRegistry<Context> ops;
+	ez::PointCloud<float, 1, 2> pointcloud;
+	int index, tangent;
+	int state;
 
 	ez::imgui::Context imguiContext;
 
 	struct NVGcontext* nvgContext;
-	Context context;
-	GUI gui;
 };
