@@ -1,8 +1,7 @@
 #include "window.hpp"
 #include <ez/math/constants.hpp>
 
-#include <ez/gl.hpp>
-#include <GL/glew.h>
+#include <rt/loader.hpp>
 
 struct NVGcontext;
 #define NANOVG_GL3_IMPLEMENTATION
@@ -25,7 +24,7 @@ Window::Window(std::string_view _title, glm::ivec2 size, ez::window::Style _styl
 	, state(State::None)
 {
 	setActive(true);
-	ez::gl::load();
+	rt::load();
 
 	nvgContext = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 
