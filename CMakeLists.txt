@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(EZ_INTERPOLATE
-VERSION 0.2.0
+VERSION 0.2.1
 LANGUAGES C CXX)
 
-option(BUILD_TESTS "Build the tests for ez-interpolate" OFF)
-set(CONFIG_DIR "share/ez-interpolate")
-
 include(GNUInstallDirs)
-find_package(ez-cmake CONFIG REQUIRED)
+include("cmake/ez-cmake/install-package.cmake")
+
+option(BUILD_TESTS "Build the test executables" ON)
+option(SEPARATE_DIRECTORY "Install the package into its own directory" ON)
+set(CONFIG_DIR "${CMAKE_INSTALL_DATAROOTDIR}/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
+
 
 find_package(glm CONFIG REQUIRED)
 find_package(ez-math CONFIG REQUIRED)
@@ -21,7 +23,9 @@ target_include_directories(ez-interpolate INTERFACE
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
 )
 
-target_link_libraries(ez-interpolate INTERFACE glm ez::math ez::meta)
+target_link_libraries(ez-interpolate INTERFACE 
+	ez::math
+)
 
 target_compile_features(ez-interpolate INTERFACE cxx_std_17)
 
@@ -32,8 +36,6 @@ set_target_properties(ez-interpolate PROPERTIES EXPORT_NAME "interpolate")
 if(${BUILD_TESTS})
 	add_subdirectory("tests")
 endif()
-
-
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/ez-interpolate)
 
@@ -58,5 +60,7 @@ install_package(
 	VERSION "${EZ_INTERPOLATE_VERSION}"
 	COMPATIBILITY "SameMajorVersion"
 	DESTINATION "${CONFIG_DIR}"
-	PRECONFIG "${CMAKE_CURRENT_SOURCE_DIR}/preconfig.cmake"
+	PRECONFIG "cmake/preconfig.cmake"
+
+	ARCH_INDEPENDENT
 )
