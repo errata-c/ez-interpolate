@@ -12,32 +12,31 @@ option(SEPARATE_DIRECTORY "Install the package into its own directory" ON)
 set(CONFIG_DIR "${CMAKE_INSTALL_DATAROOTDIR}/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
 
 
-find_package(glm CONFIG REQUIRED)
 find_package(ez-math CONFIG REQUIRED)
-find_package(ez-meta CONFIG REQUIRED)
 
-add_library(ez-interpolate INTERFACE)
+add_library(interpolate INTERFACE)
 
-target_include_directories(ez-interpolate INTERFACE 
+target_include_directories(interpolate INTERFACE 
 	"$<INSTALL_INTERFACE:include>"
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
 )
 
-target_link_libraries(ez-interpolate INTERFACE 
+target_link_libraries(interpolate INTERFACE 
 	ez::math
 )
 
-target_compile_features(ez-interpolate INTERFACE cxx_std_17)
+target_compile_features(interpolate INTERFACE cxx_std_17)
 
-set_target_properties(ez-interpolate PROPERTIES EXPORT_NAME "interpolate")
+add_library(ez::interpolate ALIAS interpolate)
 
-
-
-if(${BUILD_TESTS})
+if(BUILD_TESTS)
 	add_subdirectory("tests")
 endif()
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/ez-interpolate)
+if(SEPARATE_DIRECTORY)
+	set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/ez-interpolate)
+endif()
+
 
 install(
 	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
@@ -46,7 +45,7 @@ install(
 	PATTERN "*.h" PATTERN "*.hpp"
 )
 
-install(TARGETS ez-interpolate
+install(TARGETS interpolate
 	EXPORT ez-interpolate-targets
 	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/$<CONFIG>"
 	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/$<CONFIG>"

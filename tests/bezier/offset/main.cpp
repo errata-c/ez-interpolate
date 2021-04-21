@@ -1,57 +1,21 @@
-#include <ez/window/Window.hpp>
-#include <ez/window/BasicEngine.hpp>
+#include "BezierCommon.hpp"
 
-#include <memory>
-#include <vector>
 
-#include <glm/vec2.hpp>
-#include <fmt/format.h>
-#include <ez/bezier/Bezier.hpp>
-#include <ez/math/poly.hpp>
-
-#include <ez/gl.hpp>
-
-#include "imgui.h"
-
-struct NVGcontext;
-#define NANOVG_GL3_IMPLEMENTATION
-#include "nanovg_gl.h"
-
-#include <ez/imgui/Context.hpp>
-
-class Window : public ez::Window {
+class Window : public BasicWindow {
 public:
-    Window(std::string_view name, glm::ivec2 size, ez::window::Style _style, const ez::window::RenderSettings& rs)
-        : ez::window::Window(name, size, _style, rs)
+    Window()
+        : BasicWindow("Bezier Offsets")
         , index(-1)
         , mode(1)
-        , ctx(nullptr)
-        , imguiContext(*this)
     {
-        setActive(true);
-        ez::gl::load();
-
-        ctx = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);  
-
         curve[0] = glm::vec2(100, 500);
         curve[1] = glm::vec2(100, 100);
         curve[2] = glm::vec2(700, 100);
         curve[3] = glm::vec2(700, 500);
+        taperValues = {0, 32, 32, 0};
     }
-    void handleInput() override {
-        imguiContext.makeActive();
 
-        ez::InputEvent ev;
-        while (pollInput(ev)) {
-            imguiContext.processEvent(ev);
-            handleEvent(ev);
-            
-            if (ev.type == ez::InEv::Closed) {
-                close();
-            }
-        }
-    }
-    void handleEvent(const ez::InputEvent & ev) {
+    void handleEvent(const ez::InputEvent & ev) override {
         if (index == -1) {
             if (ev.type == ez::InputEventType::MousePress && ev.mouse.button == ez::Mouse::Left) {
                 glm::vec2 mpos = ev.mouse.position;
@@ -83,92 +47,63 @@ public:
             }
         }
     }
-    void buildGui() {
+
+    void drawGUI() override {
         ImGui::Begin("Edit");
 
         ImGui::RadioButton("Taper", &mode, 1);
         ImGui::RadioButton("Normal", &mode, 2);
 
+        ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, 0.f, 64.f, "%.0f", 1.f);
+
         ImGui::End();
     }
-    void draw() override {
-        imguiContext.makeActive();
-        imguiContext.newFrame(*this);
-        buildGui();
 
-        glClearColor(1, 1, 1, 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    void drawVG() override {
+        strokeColor(0, 0, 0);
+        fillColor(0.2, 0.2, 0.2);
+        strokeWidth(3);
 
-        glm::vec2 window = getSize();
-        glm::vec2 frame = getViewportSize();
-        
-        nvgBeginFrame(ctx, window.x, window.y, window.x / frame.x);
-
-        nvgStrokeColor(ctx, nvgRGBf(0, 0, 0));
-        nvgFillColor(ctx, nvgRGBf(0.2, 0.2, 0.8));
-        nvgStrokeWidth(ctx, 3.f);
-
-        nvgBeginPath(ctx);
-        moveTo(ctx, curve[0]);
-        bezierTo(ctx, curve[1], curve[2], curve[3]);
-        nvgStroke(ctx);
+        beginPath();
+        moveTo(curve[0]);
+        bezierTo(curve[1], curve[2], curve[3]);
+        stroke();
         
         offset.clear();
         if (mode == 1) {
-            ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], glm::vec4{ 0, 32, 32, 0 }, std::back_inserter(offset));
+            ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], taperValues, std::back_inserter(offset));
         }
         else {
            ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], 32.f, std::back_inserter(offset));
         }
 
         if (offset.size() > 0) {
-            nvgBeginPath(ctx);
+            beginPath();
             for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(offset.size()); i += 4) {
-                moveTo(ctx, offset[i]);
-                bezierTo(ctx, offset[i + 1], offset[i + 2], offset[i + 3]);
+                moveTo(offset[i]);
+                bezierTo(offset[i + 1], offset[i + 2], offset[i + 3]);
             }
-            nvgStrokeColor(ctx, nvgRGBf(0, 0, 0));
-            nvgStroke(ctx);
+            stroke();
         }
 
         for (int i = 0; i < 4; ++i) {
-            glm::vec2 pos = curve[i];
-
-            drawPoint(ctx, pos);
+            if (i == index) {
+                fillColor(0, 0, 1);
+            }
+            else {
+                fillColor(1, 0, 0);
+            }
+            drawPoint(curve[i]);
         }
 
+        fillColor(0.4, 0.4, 0.4);
         for (std::size_t i = 0; i < offset.size(); i += 4) {
-            drawPoint(ctx, offset[i]);
-            drawPoint(ctx, offset[i + 3]);
+            drawPoint(offset[i]);
         }
-
-        nvgEndFrame(ctx);
-
-        imguiContext.render();
-
-        glDisable(GL_BLEND);
+        drawPoint(offset.back());
     }
 
-    void moveTo(NVGcontext* ctx, glm::vec2 pos) {
-        nvgMoveTo(ctx, pos.x, pos.y);
-    }
-    void bezierTo(NVGcontext* ctx, glm::vec2 p0, glm::vec2 p1, glm::vec2 p2) {
-        nvgBezierTo(ctx, p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
-    }
-    void bezierTo(NVGcontext* ctx, glm::vec2 p0, glm::vec2 p1) {
-        nvgQuadTo(ctx, p0.x, p0.y, p1.x, p1.y);
-    }
-    void lineTo(NVGcontext* ctx, glm::vec2 p) {
-        nvgLineTo(ctx, p.x, p.y);
-    }
-    void drawPoint(NVGcontext* ctx, glm::vec2 pos) {
-        nvgBeginPath(ctx);
-        nvgArc(ctx, pos.x, pos.y, 5.f, 0.f, ez::tau<float>(), NVG_CCW);
-        nvgFill(ctx);
-    }
-
-    struct NVGcontext* ctx;
-    ez::imgui::Context imguiContext;
+    glm::vec4 taperValues;
 
     std::ptrdiff_t index;
     std::array<glm::vec2, 4> curve;
@@ -180,13 +115,7 @@ public:
 int main(int argc, char** argv) {
     ez::window::BasicEngine engine;
 
-    ez::window::GLSettings rset;
-    rset.majorVersion() = 4;
-    rset.minorVersion() = 5;
-    rset.stencilBits() = 8;
-    rset.depthBits() = 24;
-
-    engine.add(new Window{ "bezier_offset test", {800, 600}, ez::window::StylePreset::Default,  rset});
+    engine.add(new Window{});
 
     return engine.run(argc, argv);
 }

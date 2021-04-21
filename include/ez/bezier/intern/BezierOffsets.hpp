@@ -121,13 +121,11 @@ namespace ez {
 
 						n2 = base[3] + n2 * delta;
 
-						*output = n0;
-						++output;
+						*output++ = n0;
 
 						bezier::curveThrough(n0, m0, m1, n2, output);
 
-						*output = n2;
-						++output;
+						*output++ = n2;
 
 						if (range < static_cast<T>(1)) {
 							// Move to next segment.
@@ -231,7 +229,7 @@ namespace ez {
 			using vec_t = glm::vec<2, T>;
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
-			intern::simplePixelOffsetCurve(p0, p1, p2, delta, output);
+			intern::simplePixelOffsetCurve(p0, p1, p2, -delta, output);
 		}
 
 		// Offset a cubic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
@@ -241,7 +239,7 @@ namespace ez {
 			using vec_t = glm::vec<2, T>;
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
-			intern::simplePixelOffsetCurve(p0, p1, p2, p3, delta, output);
+			intern::simplePixelOffsetCurve(p0, p1, p2, p3, -delta, output);
 		}
 		
 		template<typename T, typename Iter>
@@ -250,7 +248,7 @@ namespace ez {
 			using vec_t = glm::vec<2, T>;
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
-			intern::taperedPixelOffsetCurve(p0, p1, p2, p3, taper, output);
+			intern::taperedPixelOffsetCurve(p0, p1, p2, p3, -taper, output);
 		}
 
 	}; // End namespace bezier

@@ -18,7 +18,6 @@ enum State {
 Window::Window(std::string_view _title, glm::ivec2 size, ez::window::Style _style, const ez::window::RenderSettings& rs)
 	: ez::window::Window(_title, size, _style, rs)
 	, nvgContext(nullptr)
-	, imguiContext(*this)
 	, index{0}
 	, tangent(0)
 	, state(State::None)
