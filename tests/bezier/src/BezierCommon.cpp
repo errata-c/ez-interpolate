@@ -6,7 +6,7 @@
 #include "nanovg_gl.h"
 
 BasicWindow::BasicWindow(std::string_view name)
-    : ez::Window(name, glm::ivec2{ 800, 600 }, ez::window::StylePreset::Default, getRS())
+    : ez::Window(name, glm::ivec2{ 1000, 800 }, ez::window::StylePreset::Default, getRS())
     , ctx(nullptr)
 {
     setActive(true);
@@ -17,6 +17,10 @@ BasicWindow::BasicWindow(std::string_view name)
 void BasicWindow::handleInput() {
     ez::InputEvent ev;
     while (pollInput(ev)) {
+        if (ev.type == ez::InEv::Resized) {
+
+        }
+
         imguiContext.processEvent(ev);
         handleEvent(ev);
 
@@ -37,8 +41,13 @@ void BasicWindow::draw() {
     glm::vec2 window = getSize();
     glm::vec2 frame = getViewportSize();
 
-    nvgBeginFrame(ctx, window.x, window.y, window.x / frame.x);
+    float pxRatio = frame.x / window.x;
 
+    // This is important! Without this the viewport stays the same even when the window resizes, leading to distortion.
+    glViewport(0, 0, frame.x, frame.y);
+
+    nvgBeginFrame(ctx, window.x, window.y, pxRatio);
+    
     drawVG();
 
     nvgEndFrame(ctx);

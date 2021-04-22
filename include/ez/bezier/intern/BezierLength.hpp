@@ -21,7 +21,7 @@ namespace ez {
 
 			template<typename T>
 			constexpr int quadIterations() {
-				return 19;
+				return 25;
 			};
 			template<>
 			constexpr int quadIterations<double>() {
@@ -30,7 +30,7 @@ namespace ez {
 
 			template<typename T>
 			constexpr int cubicIterations() {
-				return 31;
+				return 35;
 			};
 			template<>
 			constexpr int cubicIterations<double>() {
@@ -55,23 +55,64 @@ namespace ez {
 			
 			constexpr int N = intern::quadIterations<T>();
 			constexpr int N1 = N - 1;
-
 			constexpr T delta = T(1) / T(N1);
-			constexpr T end = delta * (T(N1) - T(0.5));
+			// compute using a sliding window
+			// account for end pieces
 
-			T len = T(0);
+			T totalLen = T(0);
+			T plen, slen, elen;
+			T t = delta;
 
-			vec_t prior = p0;
-			for (T t = delta; t < end; t += delta) {
-				vec_t mid = interpolate(p0, p1, p2, t);
+			vec_t
+				interp0 = p0,
+				interp1 = interpolate(p0, p1, p2, t),
+				interp2;
+			t += delta;
+
+			plen = glm::length(interp1 - interp0);
+
+			for (int i = 1; i < N1; ++i) {
+				interp2 = interpolate(p0, p1, p2, t);
 				t += delta;
-				vec_t post = interpolate(p0, p1, p2, t);
 
-				len += intern::circleArcApprox(glm::length(post - prior), glm::length(mid - prior) + glm::length(post - mid));
-				prior = post;
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
+
+				totalLen += intern::circleArcApprox(elen, plen + slen);
+
+				plen = slen;
+				interp0 = interp1;
+				interp1 = interp2;
 			}
 
-			return len;
+
+			// Account for first segment
+			{
+				interp0 = p0;
+				interp1 = interpolate(p0, p1, p2, delta * T(0.5));
+				interp2 = interpolate(p0, p1, p2, delta);
+
+				plen = glm::length(interp1 - interp0);
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
+
+				totalLen += intern::circleArcApprox(elen, plen + slen);
+			}
+			// Account for final segment
+			{
+				interp0 = interpolate(p0, p1, p2, T(1) - delta);
+				interp1 = interpolate(p0, p1, p2, T(1) - delta * T(0.5));
+				interp2 = p3;
+
+				plen = glm::length(interp1 - interp0);
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
+
+				totalLen += intern::circleArcApprox(elen, plen + slen);
+			}
+			/**/
+
+			return totalLen * T(0.5);
 		};
 
 		template<typename vec_t>
@@ -82,30 +123,65 @@ namespace ez {
 
 			constexpr int N = intern::cubicIterations<T>();
 			constexpr int N1 = N - 1;
-
 			constexpr T delta = T(1) / T(N1);
-			constexpr T end = delta * (T(N1) - T(0.5));
 
-			T len = T(0);
+			// compute using a sliding window
+			// account for end pieces
+
+			T totalLen = T(0);
+			T plen, slen, elen;
 			T t = delta;
 
-			for (int i = 0; i < N; ++i, t += delta) {
+			vec_t 
+				interp0 = p0, 
+				interp1 = interpolate(p0, p1, p2, p3, t), 
+				interp2;
+			t += delta;
+			
+			plen = glm::length(interp1 - interp0);
 
+			for (int i = 1; i < N1; ++i) {
+				interp2 = interpolate(p0, p1, p2, p3, t);
+				t += delta;
+
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
+
+				totalLen += intern::circleArcApprox(elen, plen + slen);
+
+				plen = slen;
+				interp0 = interp1;
+				interp1 = interp2;
 			}
 
 			
+			// Account for first segment
+			{
+				interp0 = p0;
+				interp1 = interpolate(p0, p1, p2, p3, delta * T(0.5));
+				interp2 = interpolate(p0, p1, p2, p3, delta);
 
-			vec_t prior = p0;
-			for (T t = delta; t < end; t += delta) {
-				vec_t mid = interpolate(p0, p1, p2, p3, t);
-				t += delta;
-				vec_t post = interpolate(p0, p1, p2, p3, t);
+				plen = glm::length(interp1 - interp0);
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
 
-				len += intern::circleArcApprox(glm::length(post - prior), glm::length(mid - prior) + glm::length(post - mid));
-				prior = post;
+				totalLen += intern::circleArcApprox(elen, plen + slen);
 			}
+			// Account for final segment
+			{
+				interp0 = interpolate(p0, p1, p2, p3, T(1) - delta);
+				interp1 = interpolate(p0, p1, p2, p3, T(1) - delta * T(0.5));
+				interp2 = p3;
 
-			return len;
+				plen = glm::length(interp1 - interp0);
+				slen = glm::length(interp2 - interp1);
+				elen = glm::length(interp2 - interp0);
+
+				totalLen += intern::circleArcApprox(elen, plen + slen);
+			}
+			/**/
+
+			return totalLen * T(0.5);
 		}
 
 		template<typename Iter>

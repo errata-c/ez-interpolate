@@ -2,46 +2,6 @@
 #include "BezierCommon.hpp"
 
 
-
-// Calculate the length using the new dot product approximation algorithm.
-inline float dotLength(const glm::vec2 & p0, const glm::vec2 & p1, const glm::vec2 & p2, const glm::vec2 & p3) {
-    /*
-    every two line segments defines a circular arc.
-    dot product of the two segments, divided by the average of their lengths gives a good guess as to the length
-
-    */
-
-    int count = 25;
-    float t = 0.f, delta = 1.f / (count - 1);
-    float totalLen = 0.f;
-
-    glm::vec2 pSeg;
-    glm::vec2 interp0, interp1;
-    float pLen;
-
-    interp0 = ez::bezier::interpolate(p0, p1, p2, p3, t);
-    t += delta;
-    interp1 = ez::bezier::interpolate(p0, p1, p2, p3, t);
-    t += delta;
-
-    pSeg = interp1 - interp0;
-    pLen = glm::length(pSeg);
-
-    for (int i = 0; i < count; ++i) {
-        glm::vec2 interp2 = ez::bezier::interpolate(p0, p1, p2, p3, t);
-        glm::vec2 seg = interp2 - interp1;
-        float len = glm::length(seg);
-
-        float segDot = glm::dot(pSeg, seg);
-
-
-        interp1 = interp2;
-        t += delta;
-    }
-
-    return totalLen;
-}
-
 class Length : public BezierTest {
 public:
     glm::vec2 interpolate(float t) {
