@@ -25,7 +25,7 @@ namespace ez {
 			static_assert(is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
-			*output++ = (p1 - p0 * static_cast<T>(0.25) - p2 * static_cast<T>(0.25))* static_cast<T>(2.0);
+			*output++ = (p1 - p0 * T(0.25) - p2 * T(0.25))* T(2.0);
 		}
 
 		// Returns the two middle controls, assuming p0 and p3 are the start and end controls.
@@ -38,16 +38,16 @@ namespace ez {
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
 			vec_t b =
-				static_cast<T>(54.0 / 18.0)* k0 +
-				static_cast<T>(-27.0 / 18.0)* k1 +
-				static_cast<T>(-15.0 / 18.0)* a +
-				static_cast<T>(6.0 / 18.0)* d;
+				T(54.0 / 18.0)* k0 +
+				T(-27.0 / 18.0)* k1 +
+				T(-15.0 / 18.0)* a +
+				T(6.0 / 18.0)* d;
 
 			vec_t c =
-				static_cast<T>(27.0 / 6.0)* k0 +
-				static_cast<T>(-8.0 / 6.0)* a +
-				static_cast<T>(-12.0 / 6.0)* b +
-				static_cast<T>(-1.0 / 6.0)* d;
+				T(27.0 / 6.0)* k0 +
+				T(-8.0 / 6.0)* a +
+				T(-12.0 / 6.0)* b +
+				T(-1.0 / 6.0)* d;
 
 			(*output++) = b;
 			(*output++) = c;
@@ -59,15 +59,15 @@ namespace ez {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::findCusp requires floating point types!" );
 			
 			glm::vec<2, T>
-				a = static_cast<T>(3)* (-p0 + static_cast<T>(3)* p1 - static_cast<T>(3)* p2 + p3),
-				b = static_cast<T>(6)* (p0 - static_cast<T>(2)* p1 + p2),
-				c = static_cast<T>(3)* (p1 - p0);
+				a = T(3)* (-p0 + T(3)* p1 - T(3)* p2 + p3),
+				b = T(6)* (p0 - T(2)* p1 + p2),
+				c = T(3)* (p1 - p0);
 
 			std::array<T, 2> xroots, yroots;
 			int xcount = ez::poly::solveQuadratic(a.x, b.x, c.x, xroots.begin());
 			int ycount = ez::poly::solveQuadratic(a.y, b.y, c.y, yroots.begin());
 
-			static constexpr T eps = ez::epsilon<T>() * static_cast<T>(3);
+			static constexpr T eps = ez::epsilon<T>() * T(3);
 
 			for (int x = 0; x < xcount; ++x) {
 				for (int y = 0; y < ycount; ++y) {

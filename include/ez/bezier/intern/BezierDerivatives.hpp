@@ -22,7 +22,7 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::derivativeAt requires floating point types!");
 
-			return interpolate(static_cast<T>(2) * (p1 - p0), static_cast<T>(2) * (p2 - p1), t);
+			return interpolate(T(2) * (p1 - p0), T(2) * (p2 - p1), t);
 		};
 		template<typename vec_t>
 		vec_t derivativeAt(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, vec_value_t<vec_t> t) {
@@ -31,7 +31,7 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::derivativeAt requires floating point types!");
 
-			return interpolate(static_cast<T>(3.0) * (p1 - p0), static_cast<T>(3.0) * (p2 - p1), static_cast<T>(3.0) * (p3 - p2), t);
+			return interpolate(T(3.0) * (p1 - p0), T(3.0) * (p2 - p1), T(3.0) * (p3 - p2), t);
 		};
 
 		template<typename vec_t>
@@ -162,8 +162,8 @@ namespace ez {
 
 			using T = vec_value_t <vec_t>;
 
-			*output++ = static_cast<T>(2.0)* (p1 - p0);
-			*output++ = static_cast<T>(2.0)* (p2 - p1);
+			*output++ = T(2.0)* (p1 - p0);
+			*output++ = T(2.0)* (p2 - p1);
 		};
 		template<typename vec_t, typename Iter>
 		void derivative(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, Iter output) {
@@ -172,9 +172,9 @@ namespace ez {
 
 			using T = vec_value_t<vec_t>;
 
-			*output++ = static_cast<T>(3.0)* (p1 - p0);
-			*output++ = static_cast<T>(3.0)* (p2 - p1);
-			*output++ = static_cast<T>(3.0)* (p3 - p2);
+			*output++ = T(3.0)* (p1 - p0);
+			*output++ = T(3.0)* (p2 - p1);
+			*output++ = T(3.0)* (p3 - p2);
 		};
 		*/
 	};

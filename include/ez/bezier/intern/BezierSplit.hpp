@@ -90,7 +90,7 @@ namespace ez {
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert((t + ez::epsilon<T>()) > static_cast<T>(0) && (t - ez::epsilon<T>()) < static_cast<T>(1));
+			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
 
 			std::array<vec_t, 3> d2{
 				interpolate(p0, p1, t),
@@ -128,20 +128,20 @@ namespace ez {
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert((t + ez::epsilon<T>()) > static_cast<T>(0) && (t - ez::epsilon<T>()) < static_cast<T>(1));
+			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
 
 			std::array<vec_t, 3> d2{
-				interpolate(p0, p1, static_cast<T>(t)),
-				interpolate(p1, p2, static_cast<T>(t)),
-				interpolate(p2, p3, static_cast<T>(t)),
+				interpolate(p0, p1, T(t)),
+				interpolate(p1, p2, T(t)),
+				interpolate(p2, p3, T(t)),
 			};
 
 			std::array<vec_t, 2> d1{
-				interpolate(d2[0], d2[1], static_cast<T>(t)),
-				interpolate(d2[1], d2[2], static_cast<T>(t)),
+				interpolate(d2[0], d2[1], T(t)),
+				interpolate(d2[1], d2[2], T(t)),
 			};
 
-			vec_t d0 = interpolate(d1[0], d1[1], static_cast<T>(t));
+			vec_t d0 = interpolate(d1[0], d1[1], T(t));
 
 			(*output) = p0;
 			++output;
@@ -160,7 +160,7 @@ namespace ez {
 			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert((t + ez::epsilon<U>()) > static_cast<T>(0) && (t - ez::epsilon<U>()) < static_cast<T>(1));
+			assert((t + ez::epsilon<U>()) > T(0) && (t - ez::epsilon<U>()) < T(1));
 
 			std::array<vec_t, 3> d2{
 				interpolate(p0, p1, t),

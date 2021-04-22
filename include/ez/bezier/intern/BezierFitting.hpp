@@ -32,20 +32,20 @@ namespace ez {
 			}
 
 			std::array<vec_t, 4> param{
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
 			};
 			std::array<vec_t, 4> pgrad2 = param;
 
 			std::array<T, 4> coeff;
 
-			//static constexpr T gama = static_cast<T>(0.9999), igama = static_cast<T>(1) - gama;
-			T igamma = static_cast<T>(1) - static_cast<T>(gamma);
+			//static constexpr T gama = T(0.9999), igama = T(1) - gama;
+			T igamma = T(1) - T(gamma);
 
-			static constexpr T eps = static_cast<T>(1E-8);
-			//static constexpr T alph = static_cast<T>(0.03);
+			static constexpr T eps = T(1E-8);
+			//static constexpr T alph = T(0.03);
 
 			std::size_t iterations;
 			if (count > itermin) {
@@ -65,12 +65,12 @@ namespace ez {
 					T t = *valIt;
 
 					{
-						T t1 = static_cast<T>(1) - t;
+						T t1 = T(1) - t;
 						T tt = t * t;
 						T t1t1 = t1 * t1;
 						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * static_cast<T>(3);
-						coeff[2] = (tt * t1) * static_cast<T>(3);
+						coeff[1] = (t1t1 * t) * T(3);
+						coeff[2] = (tt * t1) * T(3);
 						coeff[3] = (tt * t);
 					}
 
@@ -79,9 +79,9 @@ namespace ez {
 					for (int i = 0; i < 4; ++i) {
 						vec_t grad = error * coeff[i];
 						//pgrad2[i] = (pgrad2[i] + std::abs(grad)) * gamma + igamma * pgrad2[i];
-						pgrad2[i] = pgrad2[i] * static_cast<T>(gamma) + grad * grad * igamma;
+						pgrad2[i] = pgrad2[i] * T(gamma) + grad * grad * igamma;
 
-						vec_t delparam = -(static_cast<T>(alph) * grad) / std::sqrt(pgrad2[i] + eps);
+						vec_t delparam = -(T(alph) * grad) / std::sqrt(pgrad2[i] + eps);
 
 						param[i] += delparam;
 					}
@@ -114,20 +114,20 @@ namespace ez {
 			}
 
 			std::array<vec_t, 4> param{
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
-				vec_t{static_cast<T>(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
+				vec_t{T(0)},
 			};
 			std::array<vec_t, 4> pgrad2 = param;
 
 			std::array<T, 4> coeff;
 
-			//static constexpr T gama = static_cast<T>(0.9999), igama = static_cast<T>(1) - gama;
-			T igama = static_cast<T>(1) - static_cast<T>(gamma);
+			//static constexpr T gama = T(0.9999), igama = T(1) - gama;
+			T igama = T(1) - T(gamma);
 
-			static constexpr T eps = static_cast<T>(1E-8);
-			//static constexpr T alph = static_cast<T>(0.03);
+			static constexpr T eps = T(1E-8);
+			//static constexpr T alph = T(0.03);
 
 
 
@@ -149,12 +149,12 @@ namespace ez {
 					T t = *valIt;
 
 					{
-						T t1 = static_cast<T>(1) - t;
+						T t1 = T(1) - t;
 						T tt = t * t;
 						T t1t1 = t1 * t1;
 						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * static_cast<T>(3);
-						coeff[2] = (tt * t1) * static_cast<T>(3);
+						coeff[1] = (t1t1 * t) * T(3);
+						coeff[2] = (tt * t1) * T(3);
 						coeff[3] = (tt * t);
 					}
 
@@ -162,9 +162,9 @@ namespace ez {
 
 					for (int i = 0; i < 4; ++i) {
 						vec_t grad = error * coeff[i];
-						pgrad2[i] = pgrad2[i] * static_cast<T>(gamma) + grad * grad * igama;
+						pgrad2[i] = pgrad2[i] * T(gamma) + grad * grad * igama;
 
-						vec_t delparam = -(static_cast<T>(alph) * grad) / (std::sqrt(pgrad2[i]) + eps);
+						vec_t delparam = -(T(alph) * grad) / (std::sqrt(pgrad2[i]) + eps);
 
 						param[i] += delparam;
 					}
@@ -198,38 +198,38 @@ namespace ez {
 
 			std::array<std::array<vec_t, 4>, 4> param{
 				std::array<vec_t, 4 >> {
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
 				},
 				std::array<vec_t, 4 >> {
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
 				},
 				std::array<vec_t, 4 >> {
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
 				},
 				std::array<vec_t, 4 >> {
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
-					vec_t{static_cast<T>(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
+					vec_t{T(0)},
 				}
 			};
 			std::array<std::array<vec_t, 4>, 4> pgrad2 = param;
 
 			std::array<T, 4> coeff;
 
-			static constexpr T gama = static_cast<T>(0.9999), igama = static_cast<T>(1) - gama;
+			static constexpr T gama = T(0.9999), igama = T(1) - gama;
 
-			static constexpr T eps = static_cast<T>(1E-8);
-			static constexpr T alph = static_cast<T>(0.03);
+			static constexpr T eps = T(1E-8);
+			static constexpr T alph = T(0.03);
 
 			static constexpr std::size_t itermin = 45;
 
@@ -254,12 +254,12 @@ namespace ez {
 					T t = *valIt;
 
 					{
-						T t1 = static_cast<T>(1) - t;
+						T t1 = T(1) - t;
 						T tt = t * t;
 						T t1t1 = t1 * t1;
 						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * static_cast<T>(3);
-						coeff[2] = (tt * t1) * static_cast<T>(3);
+						coeff[1] = (t1t1 * t) * T(3);
+						coeff[2] = (tt * t1) * T(3);
 						coeff[3] = (tt * t);
 					}
 

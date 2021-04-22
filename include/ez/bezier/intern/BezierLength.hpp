@@ -13,7 +13,7 @@ namespace ez {
 		namespace intern {
 			template<typename T>
 			T circleArcApprox(T D1, T D2) {
-				static constexpr T coeff = static_cast<T>(1.0 / 3.0);
+				static constexpr T coeff = T(1.0 / 3.0);
 				return D2 + (D2 - D1) * coeff;
 			}
 
@@ -56,10 +56,10 @@ namespace ez {
 			constexpr int N = intern::quadIterations<T>();
 			constexpr int N1 = N - 1;
 
-			constexpr T delta = static_cast<T>(1) / static_cast<T>(N1);
-			constexpr T end = delta * (static_cast<T>(N1) - static_cast<T>(0.5));
+			constexpr T delta = T(1) / T(N1);
+			constexpr T end = delta * (T(N1) - T(0.5));
 
-			T len = static_cast<T>(0);
+			T len = T(0);
 
 			vec_t prior = p0;
 			for (T t = delta; t < end; t += delta) {
@@ -83,10 +83,17 @@ namespace ez {
 			constexpr int N = intern::cubicIterations<T>();
 			constexpr int N1 = N - 1;
 
-			constexpr T delta = static_cast<T>(1) / static_cast<T>(N1);
-			constexpr T end = delta * (static_cast<T>(N1) - static_cast<T>(0.5));
+			constexpr T delta = T(1) / T(N1);
+			constexpr T end = delta * (T(N1) - T(0.5));
 
-			T len = static_cast<T>(0);
+			T len = T(0);
+			T t = delta;
+
+			for (int i = 0; i < N; ++i, t += delta) {
+
+			}
+
+			
 
 			vec_t prior = p0;
 			for (T t = delta; t < end; t += delta) {
@@ -112,10 +119,10 @@ namespace ez {
 
 			std::size_t N1 = ((end - begin) - 1) * 10;
 
-			T delta = static_cast<T>(1) / static_cast<T>(N1);
-			T last = delta * (static_cast<T>(N1) - static_cast<T>(0.5));
+			T delta = T(1) / T(N1);
+			T last = delta * (T(N1) - T(0.5));
 
-			T len = static_cast<T>(0);
+			T len = T(0);
 
 			vec_t prior = p0;
 			for (T t = delta; t < end; t += delta) {

@@ -73,8 +73,8 @@ namespace ez {
 		typename Iter::value_type surfaceInterpolate(Iter row0, Iter row1, T u, T v) {
 			using vec_t = Iter::value_type;
 
-			T v1 = static_cast<T>(1) - v;
-			T u1 = static_cast<T>(1) - u;
+			T v1 = T(1) - v;
+			T u1 = T(1) - u;
 
 			T uc[2];
 			T vc[2];
@@ -95,7 +95,7 @@ namespace ez {
 			++row1;
 			arr[1][1] = *row1;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 
 			for (int y = 0; y < 2; ++y) {
 				for (int x = 0; x < 2; ++x) {
@@ -110,8 +110,8 @@ namespace ez {
 		typename Iter::value_type surfaceInterpolate(Iter row0, Iter row1, Iter row2, T u, T v) {
 			using vec_t = typename Iter::value_type;
 
-			T v1 = static_cast<T>(1) - v;
-			T u1 = static_cast<T>(1) - u;
+			T v1 = T(1) - v;
+			T u1 = T(1) - u;
 
 			T uc[3];
 			T vc[3];
@@ -144,7 +144,7 @@ namespace ez {
 			++row2;
 			arr[2][2] = *row2;
 
-			vec_t ret{static_cast<T>(0)};
+			vec_t ret{T(0)};
 
 			for (int y = 0; y < 3; ++y) {
 				for (int x = 0; x < 3; ++x) {
@@ -159,20 +159,20 @@ namespace ez {
 		typename Iter::value_type surfaceInterpolate(Iter row0, Iter row1, Iter row2, Iter row3, T u, T v) {
 			using vec_t = typename Iter::value_type;
 
-			T v1 = static_cast<T>(1) - v;
-			T u1 = static_cast<T>(1) - u;
+			T v1 = T(1) - v;
+			T u1 = T(1) - u;
 
 			T uc[4];
 			T vc[4];
 
 			uc[0] = u1 * u1 * u1;
-			uc[1] = u * u1 * u1 * static_cast<T>(3);
-			uc[2] = u * u * u1 * static_cast<T>(3);
+			uc[1] = u * u1 * u1 * T(3);
+			uc[2] = u * u * u1 * T(3);
 			uc[3] = u * u * u;
 
 			vc[0] = v1 * v1 * v1;
-			vc[1] = v * v1 * v1 * static_cast<T>(3);
-			vc[2] = v * v * v1 * static_cast<T>(3);
+			vc[1] = v * v1 * v1 * T(3);
+			vc[2] = v * v * v1 * T(3);
 			vc[3] = v * v * v;
 
 			vec_t arr[4][4];
@@ -209,7 +209,7 @@ namespace ez {
 			++row3;
 			arr[3][3] = *row3;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 
 			for (int y = 0; y < 4; ++y) {
 				for (int x = 0; x < 4; ++x) {
@@ -231,7 +231,7 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 			
-			T u1 = static_cast<T>(1) - u;
+			T u1 = T(1) - u;
 
 			T uc[2];
 
@@ -248,14 +248,14 @@ namespace ez {
 			++row1;
 			arr[1][1] = *row1;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int x = 0; x < 2; ++x) {
 				ret += arr[x][0] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 2; ++x) {
 				ret += arr[x][0] * uc[x];
 			}
@@ -273,7 +273,7 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 
-			T v1 = static_cast<T>(1) - v;
+			T v1 = T(1) - v;
 
 			T vc[2];
 
@@ -290,14 +290,14 @@ namespace ez {
 			++row1;
 			arr[1][1] = *row1;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int y = 0; y < 2; ++y) {
 				ret += arr[0][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 2; ++y) {
 				ret += arr[0][y] * vc[y];
 			}
@@ -315,7 +315,7 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 
-			T u1 = static_cast<T>(1) - u;
+			T u1 = T(1) - u;
 
 			T uc[3];
 
@@ -343,21 +343,21 @@ namespace ez {
 			++row2;
 			arr[2][2] = *row2;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int x = 0; x < 3; ++x) {
 				ret += arr[x][0] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 3; ++x) {
 				ret += arr[x][1] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 3; ++x) {
 				ret += arr[x][2] * uc[x];
 			}
@@ -375,7 +375,7 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 
-			T v1 = static_cast<T>(1) - v;
+			T v1 = T(1) - v;
 
 			T vc[3];
 
@@ -403,21 +403,21 @@ namespace ez {
 			++row2;
 			arr[2][2] = *row2;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int y = 0; y < 3; ++y) {
 				ret += arr[0][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 3; ++y) {
 				ret += arr[1][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 3; ++y) {
 				ret += arr[2][y] * vc[y];
 			}
@@ -435,13 +435,13 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 
-			T u1 = static_cast<T>(1) - u;
+			T u1 = T(1) - u;
 
 			T uc[4];
 
 			uc[0] = u1 * u1 * u1;
-			uc[1] = u * u1 * u1 * static_cast<T>(3);
-			uc[2] = u * u * u1 * static_cast<T>(3);
+			uc[1] = u * u1 * u1 * T(3);
+			uc[2] = u * u * u1 * T(3);
 			uc[3] = u * u * u;
 
 			vec_t arr[4][4];
@@ -478,28 +478,28 @@ namespace ez {
 			++row3;
 			arr[3][3] = *row3;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int x = 0; x < 4; ++x) {
 				ret += arr[x][0] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 4; ++x) {
 				ret += arr[x][1] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 4; ++x) {
 				ret += arr[x][2] * uc[x];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int x = 0; x < 4; ++x) {
 				ret += arr[x][3] * uc[x];
 			}
@@ -517,13 +517,13 @@ namespace ez {
 
 			static_assert(std::is_floating_point<T>::value, "The interpolation value passed in must be a floating point value!");
 
-			T v1 = static_cast<T>(1) - v;
+			T v1 = T(1) - v;
 
 			T vc[4];
 
 			vc[0] = v1 * v1 * v1;
-			vc[1] = v * v1 * v1 * static_cast<T>(3);
-			vc[2] = v * v * v1 * static_cast<T>(3);
+			vc[1] = v * v1 * v1 * T(3);
+			vc[2] = v * v * v1 * T(3);
 			vc[3] = v * v * v;
 
 			vec_t arr[4][4];
@@ -560,28 +560,28 @@ namespace ez {
 			++row3;
 			arr[3][3] = *row3;
 
-			vec_t ret{ static_cast<T>(0) };
+			vec_t ret{ T(0) };
 			for (int y = 0; y < 4; ++y) {
 				ret += arr[0][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 4; ++y) {
 				ret += arr[1][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 4; ++y) {
 				ret += arr[2][y] * vc[y];
 			}
 			(*output) = ret;
 			++output;
 
-			ret = vec_t{ static_cast<T>(0) };
+			ret = vec_t{ T(0) };
 			for (int y = 0; y < 4; ++y) {
 				ret += arr[3][y] * vc[y];
 			}

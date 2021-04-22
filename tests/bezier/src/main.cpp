@@ -3,6 +3,7 @@
 #include "BezierCommon.hpp"
 #include "BPath.hpp"
 #include "Offset.hpp"
+#include "Length.hpp"
 
 class Window : public BasicWindow {
 public:
@@ -14,6 +15,7 @@ public:
 
         tests[0].reset(new BPath{ *this });
         tests[1].reset(new Offset{ *this });
+        tests[2].reset(new Length{ *this });
     }
     ~Window() {}
 
@@ -47,7 +49,7 @@ public:
 private:
     BezierTest* currentTest;
 
-    std::array<std::unique_ptr<BezierTest>, 2> tests;
+    std::array<std::unique_ptr<BezierTest>, 3> tests;
 };
 
 int main(int argc, char** argv) {

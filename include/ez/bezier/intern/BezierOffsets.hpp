@@ -11,7 +11,7 @@ namespace ez {
 			// Offset for quadratic
 			template<typename T, typename Iter>
 			void simplePixelOffsetCurve(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T delta, Iter output) {
-				static constexpr T threshold = static_cast<T>(0.921);
+				static constexpr T threshold = T(0.921);
 
 				// To support negative offsets
 				T compare = std::abs(delta);
@@ -21,8 +21,8 @@ namespace ez {
 				// else subdivide and repeat.
 				std::array<glm::tvec2<T>, 3> base{ p0, p1, p2 };
 
-				T range = static_cast<T>(1);
-				T start = static_cast<T>(0);
+				T range = T(1);
+				T start = T(0);
 
 				while (start < range) {
 					glm::tvec2<T> n1 = base[2] - base[1];
@@ -33,8 +33,8 @@ namespace ez {
 
 					if (glm::dot(n0, n1) < threshold) {
 						// Subdivide
-						range = (start + range) * static_cast<T>(0.5);
-						bezier::leftSplit(base[0], base[1], base[2], static_cast<T>(0.5), base.begin());
+						range = (start + range) * T(0.5);
+						bezier::leftSplit(base[0], base[1], base[2], T(0.5), base.begin());
 						continue;
 					}
 					else {
@@ -44,7 +44,7 @@ namespace ez {
 						glm::vec<2, T> m = glm::normalize(n0 + n1);
 
 						n0 = base[0] + n0 * delta;
-						m = interpolate(base[0], base[1], base[2], static_cast<T>(0.5)) + m * delta;
+						m = interpolate(base[0], base[1], base[2], T(0.5)) + m * delta;
 						n1 = base[2] + n1 * delta;
 
 						// Finalize the current offset segment, check if we are done.
@@ -56,10 +56,10 @@ namespace ez {
 						(*output) = n1;
 						++output;
 
-						if (range < static_cast<T>(1)) {
+						if (range < T(1)) {
 							// Move to next segment.
 							start = range;
-							range = static_cast<T>(1);
+							range = T(1);
 							bezier::rightSplit(p0, p1, p2, start, base.begin());
 							continue;
 						}
@@ -74,18 +74,18 @@ namespace ez {
 			// Offset for cubic
 			template<typename T, typename Iter>
 			void simplePixelOffsetCurve(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, T delta, Iter output) {
-				static constexpr std::array<T, 4> interp{ static_cast<T>(0.0), static_cast<T>(1.0 / 3.0), static_cast<T>(2.0 / 3.0), static_cast<T>(1.0) };
+				static constexpr std::array<T, 4> interp{ T(0.0), T(1.0 / 3.0), T(2.0 / 3.0), T(1.0) };
 
-				static constexpr T threshold = static_cast<T>(0.93);
+				static constexpr T threshold = T(0.93);
 				
 				// offset the points first,
 				// Check the middle, if its the right distance FIN
 				// else subdivide and repeat.
 				std::array<glm::tvec2<T>, 4> base{ p0, p1, p2, p3 };
-				bezier::leftSplit(base[0], base[1], base[2], base[3], static_cast<T>(0.5), base.begin());
+				bezier::leftSplit(base[0], base[1], base[2], base[3], T(0.5), base.begin());
 
-				T range = static_cast<T>(0.5);
-				T start = static_cast<T>(0.0);
+				T range = T(0.5);
+				T start = T(0.0);
 
 				while (start < range) {
 					glm::tvec2<T> n1 = base[2] - base[1];
@@ -96,8 +96,8 @@ namespace ez {
 
 					if (glm::dot(n0, n1) < threshold) {
 						// Subdivide
-						range = (start + range) * static_cast<T>(0.5);
-						bezier::leftSplit(base[0], base[1], base[2], base[3], static_cast<T>(0.5), base.begin());
+						range = (start + range) * T(0.5);
+						bezier::leftSplit(base[0], base[1], base[2], base[3], T(0.5), base.begin());
 						continue;
 					}
 					else {
@@ -127,10 +127,10 @@ namespace ez {
 
 						*output++ = n2;
 
-						if (range < static_cast<T>(1)) {
+						if (range < T(1)) {
 							// Move to next segment.
 							start = range;
-							range = static_cast<T>(1);
+							range = T(1);
 							bezier::rightSplit(p0, p1, p2, p3, start, base.begin());
 							continue;
 						}
@@ -145,21 +145,21 @@ namespace ez {
 			// Tapered offset for cubic 
 			template<typename T, typename Iter>
 			void taperedPixelOffsetCurve(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, const glm::vec<4, T>& taper, Iter output) {
-				static constexpr std::array<T, 4> interp{ static_cast<T>(0.0), static_cast<T>(1.0 / 3.0), static_cast<T>(2.0 / 3.0), static_cast<T>(1.0) };
+				static constexpr std::array<T, 4> interp{ T(0.0), T(1.0 / 3.0), T(2.0 / 3.0), T(1.0) };
 				
 				// Since its tapered, use slightly tighter bounds
-				static constexpr T threshold = static_cast<T>(0.97);
+				static constexpr T threshold = T(0.97);
 
 				// offset the points first,
 				// Check the middle, if its the right distance FIN
 				// else subdivide and repeat.
 				std::array<T, 4> taperBase{ taper.x, taper.y, taper.z, taper.w };
 				std::array<glm::tvec2<T>, 4> base{ p0, p1, p2, p3 };
-				bezier::leftSplit(base[0], base[1], base[2], base[3], static_cast<T>(0.5), base.begin());
-				bezier::leftSplit(taperBase[0], taperBase[1], taperBase[2], taperBase[3], static_cast<T>(0.5), taperBase.begin());
+				bezier::leftSplit(base[0], base[1], base[2], base[3], T(0.5), base.begin());
+				bezier::leftSplit(taperBase[0], taperBase[1], taperBase[2], taperBase[3], T(0.5), taperBase.begin());
 
-				T range = static_cast<T>(0.5);
-				T start = static_cast<T>(0.0);
+				T range = T(0.5);
+				T start = T(0.0);
 
 				while (start < range) {
 					glm::tvec2<T> n1 = base[2] - base[1];
@@ -170,7 +170,7 @@ namespace ez {
 
 					if (glm::dot(n0, n1) < threshold) {
 						// Subdivide
-						range = (start + range) * static_cast<T>(0.5);
+						range = (start + range) * T(0.5);
 						bezier::leftSplit(base[0], base[1], base[2], base[3], T(0.5), base.begin());
 						bezier::leftSplit(taperBase[0], taperBase[1], taperBase[2], taperBase[3], T(0.5), taperBase.begin());
 						continue;
@@ -204,10 +204,10 @@ namespace ez {
 
 						// Finalize the current offset segment, check if we are done.
 
-						if (range < static_cast<T>(1)) {
+						if (range < T(1)) {
 							// Move to next segment.
 							start = range;
-							range = static_cast<T>(1);
+							range = T(1);
 							bezier::rightSplit(p0, p1, p2, p3, start, base.begin());
 							bezier::rightSplit(taper[0], taper[1], taper[2], taper[3], start, taperBase.begin());
 							continue;
