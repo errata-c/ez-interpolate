@@ -1,14 +1,14 @@
+#pragma once
+
 #include "BezierCommon.hpp"
 #include <ez/bezier/BPath.hpp>
 
-class Window: public BasicWindow {
+class BPath : public BezierTest {
 public:
-    Window()
-        : BasicWindow("BPath")
+    BPath(BasicWindow & _window)
+        : BezierTest("BPath", _window)
         , index(-1)
     {
-        ImGui::StyleColorsDark();
-
         path.append(glm::vec2{ 0.2, 0.8 });
         path.append(glm::vec2{ 0.2, 0.2 });
         path.append(glm::vec2{ 0.4, 0.1 });
@@ -17,13 +17,13 @@ public:
 
         fmt::print("The path has {} segments.\n", path.numSegments());
     }
-    ~Window() {}
+    ~BPath() {}
 
     void handleEvent(const ez::InputEvent& ev) override {
         if (index == -1) {
             if (ev.type == ez::InputEventType::MousePress && ev.mouse.button == ez::Mouse::Left) {
                 glm::vec2 mpos = ev.mouse.position;
-                glm::vec2 frame = getViewportSize();
+                glm::vec2 frame = window.getViewportSize();
 
                 float dist2 = 8;
                 std::ptrdiff_t select = -1;
@@ -47,7 +47,7 @@ public:
             }
             else if (ev.type == ez::InputEventType::MouseMove) {
                 glm::vec2 mpos = ev.mouse.position;
-                glm::vec2 frame = getViewportSize();
+                glm::vec2 frame = window.getViewportSize();
                 mpos /= frame;
 
                 path[index] = mpos;
@@ -58,20 +58,18 @@ public:
     void drawGUI() override {
 
     }
-    void drawVG() override {
-        glm::vec2 frame = getViewportSize();
-        drawPath(frame);
-    }
 
-    void drawPath(glm::vec2 size) {
+    void drawVG() override {
+        glm::vec2 size = window.getViewportSize();
+
         strokeWidth(3.f);
 
-        fillColor(0,0,1);
+        fillColor(0, 0, 1);
         for (auto& point : path) {
             drawPoint(point * size);
         }
 
-        strokeColor(0,0,0);
+        strokeColor(0, 0, 0);
 
         beginPath();
 
@@ -85,16 +83,9 @@ public:
             moveTo(seg[0]);
             bezierTo(seg[1], seg[2], seg[3]);
         }
-        nvgStroke(ctx);
+        stroke();
     }
 private:
     ez::BPath<glm::vec2> path;
     std::ptrdiff_t index;
 };
-
-int main(int argc, char ** argv) {
-    ez::window::BasicEngine engine;
-    engine.add(new Window{});
-
-    return engine.run(argc, argv);
-}

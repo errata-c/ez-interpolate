@@ -7,9 +7,12 @@ find_package(nanovg CONFIG REQUIRED)
 find_package(glew CONFIG REQUIRED)
 find_package(rt-loader CONFIG REQUIRED COMPONENTS glew)
 
-add_library(bezier_test_common STATIC "common/BezierCommon.cpp")
-target_include_directories(bezier_test_common PUBLIC "common")
-target_link_libraries(bezier_test_common PUBLIC 
+add_executable(bezier_tests 
+	"src/BezierCommon.cpp"
+	"src/main.cpp"
+)
+target_include_directories(bezier_tests PUBLIC "include")
+target_link_libraries(bezier_tests PUBLIC 
 	fmt::fmt 
 	ez::window
 	ez::imgui
@@ -21,8 +24,3 @@ target_link_libraries(bezier_test_common PUBLIC
 
 	ez::interpolate
 )
-
-#add_subdirectory("fitting")
-add_subdirectory("offset")
-add_subdirectory("bpath")
-add_subdirectory("knots")

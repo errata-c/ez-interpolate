@@ -1,10 +1,10 @@
+#pragma once
 #include "BezierCommon.hpp"
 
-
-class Window : public BasicWindow {
+class Offset : public BezierTest {
 public:
-    Window()
-        : BasicWindow("Bezier Offsets")
+    Offset(BasicWindow & _window)
+        : BezierTest("Bezier Offsets", _window)
         , index(-1)
         , mode(1)
     {
@@ -12,10 +12,11 @@ public:
         curve[1] = glm::vec2(100, 100);
         curve[2] = glm::vec2(700, 100);
         curve[3] = glm::vec2(700, 500);
-        taperValues = {0, 32, 32, 0};
+
+        taperValues = { 0, 32, 32, 0 };
     }
 
-    void handleEvent(const ez::InputEvent & ev) override {
+    void handleEvent(const ez::InputEvent& ev) override {
         if (index == -1) {
             if (ev.type == ez::InputEventType::MousePress && ev.mouse.button == ez::Mouse::Left) {
                 glm::vec2 mpos = ev.mouse.position;
@@ -68,13 +69,13 @@ public:
         moveTo(curve[0]);
         bezierTo(curve[1], curve[2], curve[3]);
         stroke();
-        
+
         offset.clear();
         if (mode == 1) {
             ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], taperValues, std::back_inserter(offset));
         }
         else {
-           ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], 32.f, std::back_inserter(offset));
+            ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], 32.f, std::back_inserter(offset));
         }
 
         if (offset.size() > 0) {
@@ -111,11 +112,3 @@ public:
 
     int mode;
 };
-
-int main(int argc, char** argv) {
-    ez::window::BasicEngine engine;
-
-    engine.add(new Window{});
-
-    return engine.run(argc, argv);
-}

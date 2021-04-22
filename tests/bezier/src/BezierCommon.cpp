@@ -84,3 +84,46 @@ void BasicWindow::drawPoint(glm::vec2 pos, float radius) {
     nvgArc(ctx, pos.x, pos.y, radius, 0.f, ez::tau<float>(), NVG_CCW);
     nvgFill(ctx);
 }
+
+
+
+
+BezierTest::BezierTest(std::string_view _name, BasicWindow & _window)
+    : name(_name)
+    , window(_window)
+{}
+
+void BezierTest::beginPath() {
+    window.beginPath();
+}
+void BezierTest::strokeWidth(float width) {
+    window.strokeWidth(width);
+}
+void BezierTest::strokeColor(float r, float g, float b) {
+    window.strokeColor(r, g, b);
+}
+void BezierTest::fillColor(float r, float g, float b) {
+    window.fillColor(r, g, b);
+}
+void BezierTest::stroke() {
+    window.stroke();
+}
+void BezierTest::fill() {
+    window.fill();
+}
+
+void BezierTest::moveTo(glm::vec2 pos) {
+    window.moveTo(pos);
+}
+void BezierTest::bezierTo(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2) {
+    window.bezierTo(p0, p1, p2);
+}
+void BezierTest::bezierTo(glm::vec2 p0, glm::vec2 p1) {
+    window.bezierTo(p0, p1);
+}
+void BezierTest::lineTo(glm::vec2 p0) {
+    window.lineTo(p0);
+}
+void BezierTest::drawPoint(glm::vec2 pos, float radius) {
+    window.drawPoint(pos, radius);
+}

@@ -49,7 +49,32 @@ public:
     void bezierTo(glm::vec2 p0, glm::vec2 p1);
     void lineTo(glm::vec2 p);
     void drawPoint(glm::vec2 pos, float radius = 5.f);
-
+private:
     struct NVGcontext* ctx;
     ez::imgui::Context imguiContext;
+};
+
+class BezierTest {
+public:
+    BezierTest(std::string_view _name, BasicWindow & _window);
+
+    virtual void handleEvent(const ez::InputEvent& ev) = 0;
+    virtual void drawGUI() = 0;
+    virtual void drawVG() = 0;
+
+    void beginPath();
+    void strokeWidth(float width);
+    void strokeColor(float r, float g, float b);
+    void fillColor(float r, float g, float b);
+    void stroke();
+    void fill();
+
+    void moveTo(glm::vec2 pos);
+    void bezierTo(glm::vec2 p0, glm::vec2 p1, glm::vec2 p2);
+    void bezierTo(glm::vec2 p0, glm::vec2 p1);
+    void lineTo(glm::vec2 p);
+    void drawPoint(glm::vec2 pos, float radius = 5.f);
+
+    std::string name;
+    BasicWindow& window;
 };
