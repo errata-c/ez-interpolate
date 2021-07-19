@@ -8,6 +8,7 @@
 
 namespace ez {
 	namespace bezier {
+		// Linear bezier derivative.
 		template<typename vec_t>
 		vec_t derivativeAt(const vec_t& p0, const vec_t& p1, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::derivativeAt requires a vector type as input!");
@@ -15,6 +16,7 @@ namespace ez {
 
 			return p1 - p0;
 		};
+		// Quadratic bezier derivative.
 		template<typename vec_t>
 		vec_t derivativeAt(const vec_t& p0, const vec_t& p1, const vec_t& p2, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::derivativeAt requires a vector type as input!");
@@ -24,6 +26,7 @@ namespace ez {
 
 			return interpolate(T(2) * (p1 - p0), T(2) * (p2 - p1), t);
 		};
+		// Cubic bezier derivative.
 		template<typename vec_t>
 		vec_t derivativeAt(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::derivativeAt requires a vector type as input!");
@@ -31,11 +34,11 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::derivativeAt requires floating point types!");
 
-			return interpolate(T(3.0) * (p1 - p0), T(3.0) * (p2 - p1), T(3.0) * (p3 - p2), t);
+			return interpolate(T(3) * (p1 - p0), T(3) * (p2 - p1), T(3) * (p3 - p2), t);
 		};
 
 		template<typename vec_t>
-		vec_t tangent(const vec_t& p0, const vec_t& p1, vec_value_t<vec_t> t) {
+		vec_t tangentAt(const vec_t& p0, const vec_t& p1, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::tangent requires a vector type as input!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::tangent requires floating point types!");
@@ -43,7 +46,7 @@ namespace ez {
 			return glm::normalize(p1 - p0);
 		};
 		template<typename T>
-		glm::vec<2, T> normal(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, T t) {
+		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, T t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
@@ -52,7 +55,7 @@ namespace ez {
 		};
 
 		template<typename vec_t>
-		vec_t tangent(const vec_t& p0, const vec_t& p1, const vec_t& p2, vec_value_t<vec_t> t) {
+		vec_t tangentAt(const vec_t& p0, const vec_t& p1, const vec_t& p2, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::tangent requires a vector type as input!");
 
 			using T = vec_value_t<vec_t>;
@@ -62,7 +65,7 @@ namespace ez {
 		};
 
 		template<typename T>
-		glm::vec<2, T> normal(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T t) {
+		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
@@ -71,7 +74,7 @@ namespace ez {
 		};
 
 		template<typename vec_t>
-		vec_t tangent(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, vec_value_t<vec_t> t) {
+		vec_t tangentAt(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::tangent requires a vector type as input!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::tangent requires floating point types!");
@@ -79,13 +82,45 @@ namespace ez {
 			return glm::normalize(derivativeAt(p0, p1, p2, p3, t));
 		};
 		template<typename T>
-		glm::vec<2, T> normal(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, T t) {
+		glm::tvec2<T> normalAt(const glm::tvec2<T>& p0, const glm::tvec2<T>& p1, const glm::tvec2<T>& p2, const glm::tvec2<T>& p3, T t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
 			glm::tvec2<T> tmp = tangent(p0, p1, p2, p3, t);
 			return glm::tvec2<T>{ -tmp.y, tmp.x };
 		};
+
+
+
+		template<typename vec_t, typename Iter>
+		void derivative(const vec_t& p0, const vec_t& p1, Iter output) {
+			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+			*output++ = p1 - p0;
+		};
+		template<typename vec_t, typename Iter>
+		void derivative(const vec_t& p0, const vec_t& p1, const vec_t& p2, Iter output) {
+			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+			using T = vec_value_t <vec_t>;
+
+			*output++ = T(2) * (p1 - p0);
+			*output++ = T(2) * (p2 - p1);
+		};
+		template<typename vec_t, typename Iter>
+		void derivative(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, Iter output) {
+			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+			using T = vec_value_t<vec_t>;
+
+			*output++ = T(3) * (p1 - p0);
+			*output++ = T(3) * (p2 - p1);
+			*output++ = T(3) * (p3 - p2);
+		};
+
 
 		/*
 		template<typename T, typename Iter>
@@ -148,34 +183,7 @@ namespace ez {
 			return tmp;
 		};
 
-		template<typename vec_t, typename Iter>
-		void derivative(const vec_t& p0, const vec_t& p1, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
-
-			*output++ = p1 - p0;
-		};
-		template<typename vec_t, typename Iter>
-		void derivative(const vec_t& p0, const vec_t& p1, const vec_t& p2, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
-
-			using T = vec_value_t <vec_t>;
-
-			*output++ = T(2.0)* (p1 - p0);
-			*output++ = T(2.0)* (p2 - p1);
-		};
-		template<typename vec_t, typename Iter>
-		void derivative(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
-
-			using T = vec_value_t<vec_t>;
-
-			*output++ = T(3.0)* (p1 - p0);
-			*output++ = T(3.0)* (p2 - p1);
-			*output++ = T(3.0)* (p3 - p2);
-		};
+		
 		*/
 	};
 };
