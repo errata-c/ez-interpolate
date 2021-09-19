@@ -15,7 +15,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(ez-cmake)
 
 
-option(EZ_INTERPOLATE_BUILD_TESTS "Build the test executables" ON)
+option(EZ_INTERPOLATE_BUILD_TESTS "Build the test executables" OFF)
 set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
 
 
