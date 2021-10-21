@@ -1,20 +1,26 @@
 #pragma once
-#include <ez/imgui/ImGuiEngine.hpp>
+#include "imgui.h"
+#include "imgui-SFML.h"
+
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/Window/Event.hpp>
+
 #include <ez/input/InputEngine.hpp>
 
-#include <ez/interpolate/PointCloud.hpp>
-
-class Engine: public ImGuiEngine {
+class Engine {
 public:
-	Engine();
+	Engine(const char * title);
 
-	void postInitialize();
-	void handleEvent(const ez::InputEvent& ev);
-	void buildGui();
-	void render();
-private:
-	ez::InputEngine inputMan;
-	ez::KeyMap keymap;
+	int run();
+	
+	virtual void handleEvent(const ez::InputEvent& ev) = 0;
+	virtual void gui() = 0;
+	virtual void render() = 0;
 
-	ez::PointCloud<float, 1> interp;
+	glm::vec2 getWindowSize() const;
+	glm::vec2 getFrameSize() const;
+
+	sf::RenderWindow window;
 };
