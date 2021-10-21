@@ -13,10 +13,10 @@ namespace ez {
 		// Returns the handles to two Quadratics created from the input quadratic bezier, split at 't'. Creates 5 points, the two segments share a handle.
 		template<typename vec_t, typename U, typename Iter>
 		void split(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::split requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::split requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::split requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::split requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::split requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
 
 			using T = vec_value_t<vec_t>;
 
@@ -38,10 +38,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename Iter>
 		void leftSplit(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::leftSplit requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::leftSplit requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::leftSplit requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			// Is this necessary? Is splitting out of range actually a bad thing?
@@ -61,10 +61,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename Iter>
 		void rightSplit(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::rightSplit requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::rightSplit requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::rightSplit requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::rightSplit requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::rightSplit requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert((t + ez::epsilon<T>()) > 0.0 && (t - ez::epsilon<T>()) < 1.0);
@@ -84,10 +84,10 @@ namespace ez {
 		// Returns the handles to two cubics created from the input cubic bezier, split at 't'.
 		template<typename vec_t, typename U, typename Iter>
 		void split(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::split requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::split requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::split requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::split requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::split requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
@@ -122,10 +122,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename Iter>
 		void leftSplit(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::leftSplit requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::leftSplit requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::leftSplit requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
@@ -154,10 +154,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename Iter>
 		void rightSplit(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, U t, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::rightSplit requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::rightSplit requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::rightSplit requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::rightSplit requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::rightSplit requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert((t + ez::epsilon<U>()) > T(0) && (t - ez::epsilon<U>()) < T(1));
@@ -187,10 +187,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename  Iter>
 		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t0, U t1, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::segment requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert(t0 < t1);
@@ -204,10 +204,10 @@ namespace ez {
 
 		template<typename vec_t, typename U, typename  Iter>
 		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t p3, U t0, U t1, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::segment requires floating point types!");
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
 			assert(t0 < t1);

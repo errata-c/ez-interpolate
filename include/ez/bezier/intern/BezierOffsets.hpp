@@ -225,9 +225,9 @@ namespace ez {
 		// Offset a quadratic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
 		template<typename T, typename Iter>
 		void pixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T delta, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
 			using vec_t = glm::vec<2, T>;
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
 			intern::simplePixelOffsetCurve(p0, p1, p2, -delta, output);
 		}
@@ -235,18 +235,18 @@ namespace ez {
 		// Offset a cubic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
 		template<typename T, typename Iter>
 		void pixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, T delta, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
 			using vec_t = glm::vec<2, T>;
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
 			intern::simplePixelOffsetCurve(p0, p1, p2, p3, -delta, output);
 		}
 		
 		template<typename T, typename Iter>
 		void taperedPixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, glm::vec<4, T> taper, Iter output) {
-			static_assert(is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+			static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
 			using vec_t = glm::vec<2, T>;
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
 			intern::taperedPixelOffsetCurve(p0, p1, p2, p3, -taper, output);
 		}

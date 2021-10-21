@@ -17,11 +17,11 @@ namespace ez {
 
 		template<typename VecIter, typename ValueIter, typename OutIter>
 		void fitCubic(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter output) {
-			static_assert(is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename is_random_iterator<VecIter>::vec_t;
+			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
+			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
 
-			static_assert(is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename is_vec<vec_t>::value_type;
+			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
+			using T = typename ez::is_vec<vec_t>::value_type;
 
 			static_assert(std::is_floating_point<std::remove_reference_t<decltype(*valueStart)>>::value, "The value iterator passed in must have floating point values!");
 			
@@ -99,11 +99,11 @@ namespace ez {
 
 		template<typename VecIter, typename ValueIter, typename OutIter>
 		void fitCubicADAGRAD(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter output) {
-			static_assert(is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename is_random_iterator<VecIter>::vec_t;
+			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
+			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
 
-			static_assert(is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename is_vec<vec_t>::value_type;
+			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
+			using T = typename ez::is_vec<vec_t>::value_type;
 
 			static_assert(std::is_floating_point<decltype(*valueStart)>::value, "The value iterator passed in must have floating point values!");
 
@@ -182,11 +182,11 @@ namespace ez {
 
 		template<typename VecIter, typename ValueIter, typename OutIter>
 		void fitCubicSurface(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter outputRow0, OutIter outputRow1, OutIter outputRow2, OutIter outputRow3) {
-			static_assert(is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename is_random_iterator<VecIter>::vec_t;
+			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
+			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
 
-			static_assert(is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename is_vec<vec_t>::value_type;
+			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
+			using T = typename ez::is_vec<vec_t>::value_type;
 
 			static_assert(std::is_floating_point<decltype(*valueStart)>::value, "The value iterator passed in must have floating point values!");
 

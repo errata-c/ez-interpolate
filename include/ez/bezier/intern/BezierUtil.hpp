@@ -19,11 +19,11 @@ namespace ez {
 		// Returns the middle control, assuming p0 and p2 are the start and end controls.
 		template<typename vec_t, typename Iter>
 		void curveThrough(const vec_t& p0, const vec_t& p1, const vec_t& p2, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
 			using T = vec_value_t<vec_t>;
 
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
 			*output++ = (p1 - p0 * T(0.25) - p2 * T(0.25))* T(2.0);
 		}
@@ -31,11 +31,11 @@ namespace ez {
 		// Returns the two middle controls, assuming p0 and p3 are the start and end controls.
 		template<typename vec_t, typename Iter>
 		void curveThrough(const vec_t& a, const vec_t& k0, const vec_t& k1, const vec_t& d, Iter output) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
 			using T = vec_value_t<vec_t>;
 
-			static_assert(is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
-			static_assert(is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
 			vec_t b =
 				T(54.0 / 18.0)* k0 +

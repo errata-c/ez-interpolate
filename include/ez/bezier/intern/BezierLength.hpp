@@ -40,7 +40,7 @@ namespace ez {
 
 		template<typename vec_t>
 		vec_value_t<vec_t> length(const vec_t& p0, const vec_t& p1) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::length requires floating point types!");
 
@@ -49,7 +49,7 @@ namespace ez {
 
 		template<typename vec_t>
 		vec_value_t<vec_t> length(const vec_t& p0, const vec_t& p1, const vec_t& p2) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::length requires floating point types!");
 			
@@ -117,7 +117,7 @@ namespace ez {
 
 		template<typename vec_t>
 		vec_value_t<vec_t> length(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3) {
-			static_assert(is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::length requires vector types!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::length requires floating point types!");
 
@@ -188,7 +188,7 @@ namespace ez {
 		iterator_value_t<Iter> lengthRange(Iter begin, Iter end) {
 			using vec_t = iterator_value_t<Iter>;
 			static_assert(is_random_iterator_v<Iter>, "ez::bezier::lengthRange requires a random access iterator!");
-			static_assert(is_vec_v<vec_t>, "ez::bezier::lengthRange requires vector types!");
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::lengthRange requires vector types!");
 			using T = vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::lengthRange requires floating point types!");
 
