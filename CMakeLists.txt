@@ -6,7 +6,6 @@ project(EZ_INTERPOLATE
 )
 
 include(FetchContent)
-
 FetchContent_Declare(
 	ez-cmake
 	GIT_REPOSITORY "https://github.com/errata-c/ez-cmake.git"
@@ -21,16 +20,13 @@ set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative 
 find_package(ez-math CONFIG REQUIRED)
 
 add_library(interpolate INTERFACE)
-
 target_include_directories(interpolate INTERFACE 
 	"$<INSTALL_INTERFACE:include>"
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
 )
-
 target_link_libraries(interpolate INTERFACE 
 	ez::math
 )
-
 target_compile_features(interpolate INTERFACE cxx_std_17)
 
 add_library(ez::interpolate ALIAS interpolate)
@@ -38,7 +34,6 @@ add_library(ez::interpolate ALIAS interpolate)
 if(EZ_INTERPOLATE_BUILD_TESTS)
 	add_subdirectory("tests")
 endif()
-
 
 install(
 	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
