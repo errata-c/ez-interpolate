@@ -45,6 +45,7 @@ public:
 		glm::vec2 dims = getWindowSize();
 		glm::vec2 frame = getFrameSize();
 
+		glClearColor(217 / 255.f, 245 / 255.f, 255 / 255.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		nvgBeginFrame(vg, dims.x, dims.y, frame.x / dims.x);

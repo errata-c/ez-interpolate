@@ -13,9 +13,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(ez-cmake)
 
-option(EZ_INTERPOLATE_BUILD_TESTS "Build the test executables" OFF)
-set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
+include(CMakeDependentOption)
 
+option(EZ_INTERPOLATE_BUILD_TESTS "Build the basic test executables" OFF)
+cmake_dependent_option(EZ_INTERPOLATE_BUILD_GUI_TESTS "Build the gui based test executables" OFF EZ_INTERPOLATE_BUILD_TESTS OFF)
+set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
 
 find_package(ez-math CONFIG REQUIRED)
 

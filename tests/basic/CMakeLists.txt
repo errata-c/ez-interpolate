@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+project(EZ_INTERPOLATE_BASIC_TESTS)
 
 find_package(Catch2 CONFIG REQUIRED)
 

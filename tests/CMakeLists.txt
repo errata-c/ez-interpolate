@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
+project(EZ_INTERPOLATE_TESTS)
 
 find_package(fmt CONFIG REQUIRED)
-find_package(rt-loader CONFIG REQUIRED COMPONENTS glew)
 
 add_subdirectory("basic")
-add_subdirectory("approx")
+
+if(EZ_INTERPOLATE_BUILD_GUI_TESTS)
+	add_subdirectory("approx")
+endif()
 
 #add_subdirectory("interactive")
 #add_subdirectory("bezier")
