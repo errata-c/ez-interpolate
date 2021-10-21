@@ -47,7 +47,6 @@ namespace ez {
 		};
 		template<typename T>
 		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, T t) {
-			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
 			glm::tvec2<T> tmp = tangent(p0, p1, t);
@@ -66,7 +65,6 @@ namespace ez {
 
 		template<typename T>
 		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T t) {
-			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
 			glm::tvec2<T> tmp = tangent(p0, p1, p2, t);
@@ -83,7 +81,6 @@ namespace ez {
 		};
 		template<typename T>
 		glm::tvec2<T> normalAt(const glm::tvec2<T>& p0, const glm::tvec2<T>& p1, const glm::tvec2<T>& p2, const glm::tvec2<T>& p3, T t) {
-			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::normal requires a vector type as input!");
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
 			glm::tvec2<T> tmp = tangent(p0, p1, p2, p3, t);

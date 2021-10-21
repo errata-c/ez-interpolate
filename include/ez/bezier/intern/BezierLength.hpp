@@ -102,7 +102,7 @@ namespace ez {
 			{
 				interp0 = interpolate(p0, p1, p2, T(1) - delta);
 				interp1 = interpolate(p0, p1, p2, T(1) - delta * T(0.5));
-				interp2 = p3;
+				interp2 = p2;
 
 				plen = glm::length(interp1 - interp0);
 				slen = glm::length(interp2 - interp1);
@@ -185,11 +185,11 @@ namespace ez {
 		}
 
 		template<typename Iter>
-		iterator_value_t<Iter> lengthRange(Iter begin, Iter end) {
-			using vec_t = iterator_value_t<Iter>;
-			static_assert(is_random_iterator_v<Iter>, "ez::bezier::lengthRange requires a random access iterator!");
+		ez::iterator_value_t<Iter> lengthRange(Iter begin, Iter end) {
+			using vec_t = ez::iterator_value_t<Iter>;
+			static_assert(ez::is_random_iterator_v<Iter>, "ez::bezier::lengthRange requires a random access iterator!");
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::lengthRange requires vector types!");
-			using T = vec_value_t<vec_t>;
+			using T = ez::vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::lengthRange requires floating point types!");
 
 
@@ -200,11 +200,11 @@ namespace ez {
 
 			T len = T(0);
 
-			vec_t prior = p0;
+			vec_t prior = *begin;
 			for (T t = delta; t < end; t += delta) {
-				vec_t mid = interpolate(p0, p1, p2, p3, t);
+				vec_t mid = interpolateRange(begin, end, t);
 				t += delta;
-				vec_t post = interpolate(p0, p1, p2, p3, t);
+				vec_t post = interpolate(begin, end, t);
 
 				len += intern::circleArcApprox(glm::length(post - prior), glm::length(mid - prior) + glm::length(post - mid));
 				prior = post;
