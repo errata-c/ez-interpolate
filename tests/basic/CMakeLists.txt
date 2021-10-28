@@ -5,7 +5,9 @@ find_package(Catch2 CONFIG REQUIRED)
 
 add_executable(basic_test 
 	"main.cpp"
-	"bezier.cpp"
+	"interpolate.cpp"
+	"derivative.cpp"
+	"length.cpp"
 )
 target_link_libraries(basic_test PRIVATE 
 	fmt::fmt 

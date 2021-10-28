@@ -19,7 +19,7 @@ namespace ez {
 			return p0 * (T(1) - t) + p1 * t;
 		};
 
-		// Normal quadratic
+		// Quadratic interpolation
 		template<typename vec_t>
 		vec_t interpolate(const vec_t& p0, const vec_t& p1, const vec_t& p2, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::interpolate requires vector types!");
@@ -28,10 +28,10 @@ namespace ez {
 
 			T t1 = T(1) - t;
 
-			return p0 * t1 * t1 + p1 * T(2) * t1 * t + p2 * t * t;
+			return (p0 * t1 * t1) + (p1 * T(2) * t1 * t) + (p2 * t * t);
 		};
 
-		// Normal cubic
+		// Cubic interpolation
 		template<typename vec_t>
 		vec_t interpolate(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, vec_value_t<vec_t> t) {
 			static_assert(is_vec_v<vec_t>, "ez::bezier::interpolate requires vector types!");
@@ -39,6 +39,7 @@ namespace ez {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::interpolate requires floating point types!");
 
 			T t1 = T(1) - t;
+
 			T tt = t * t;
 			T t1t1 = t1 * t1;
 
