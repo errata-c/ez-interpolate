@@ -46,18 +46,19 @@ namespace ez {
 			return p0 * t1t1 * t1 + p1 * T(3)* t1t1* t + p2 * T(3)* tt* t1 + p3 * tt * t;
 		};
 
-		/*
+		
 		template<typename T, typename Iter>
-		iterator_value_t<Iter> interpolateRange(Iter begin, Iter end, T t) {
-			static_assert(is_random_iterator_v<Iter>, "ez::bezier::interpolateRange requires an random access iterator!");
-			using vec_t = iterator_value_t<Iter>;
-			static_assert(is_vec_v<vec_t>, "ez::bezier::interpolateRange requires iterator to vector type!");
+		ez::iterator_value_t<Iter> interpolateRange(Iter begin, Iter end, T t) {
+			static_assert(ez::is_random_iterator_v<Iter>, "ez::bezier::interpolateRange requires an random access iterator!");
+			using vec_t = ez::iterator_value_t<Iter>;
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::interpolateRange requires iterator to vector type!");
 
 			intptr_t diff = end - begin;
 			switch (diff) {
 			case 0:
+				return vec_t{0};
 			case 1:
-				return vec_t{};
+				return *begin;
 			case 2: // linear
 				return bezier::interpolate(*(begin), *(begin + 1), t);
 			case 3: // quadratic
@@ -71,6 +72,7 @@ namespace ez {
 			}
 		};
 
+		/*
 		template<typename T, typename Iter, std::enable_if_t<is_input_iterator<Iter>::value && std::is_floating_point<T>::value, int> = 0>
 		typename Iter::value_type surfaceInterpolate(Iter row0, Iter row1, T u, T v) {
 			using vec_t = Iter::value_type;
