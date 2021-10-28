@@ -8,6 +8,12 @@
 #include <glm/gtx/norm.hpp>
 #include "BezierUtil.hpp"
 
+
+/// These length calculations are based on the research paper:
+/// 'Fast and Accurate Parametric Curve Length Computation', January 2001, Journal of Graphics Tools 6(4):29-40
+/// DOI:10.1080/10867651.2001.10487548
+/// Authors: Stephen Vincent, David R. Forsey
+
 namespace ez {
 	namespace bezier {
 		namespace intern {
@@ -84,7 +90,6 @@ namespace ez {
 				interp0 = interp1;
 				interp1 = interp2;
 			}
-
 
 			// Account for first segment
 			{
@@ -184,6 +189,7 @@ namespace ez {
 			return totalLen * T(0.5);
 		}
 
+		// This function needs some testing.
 		template<typename Iter>
 		ez::iterator_value_t<Iter> lengthRange(Iter begin, Iter end) {
 			using vec_t = ez::iterator_value_t<Iter>;
@@ -191,7 +197,6 @@ namespace ez {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::lengthRange requires vector types!");
 			using T = ez::vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::lengthRange requires floating point types!");
-
 
 			std::size_t N1 = ((end - begin) - 1) * 10;
 

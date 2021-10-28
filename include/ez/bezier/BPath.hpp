@@ -7,6 +7,8 @@
 #include <array>
 #include <glm/vec2.hpp>
 
+#include <ez/bezier/intern/BezierInterpolation.hpp>
+
 namespace ez {
 	template<typename vec_t>
 	class BPath {
