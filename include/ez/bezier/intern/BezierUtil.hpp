@@ -6,6 +6,7 @@
 #include <glm/vec4.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/norm.hpp>
+#include <algorithm>
 
 namespace glm {
 	template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
@@ -57,30 +58,74 @@ namespace ez {
 		}
 
 		// Function for finding the cusp on a cubic curve, if it exists.
-		template<typename T>
-		bool findCusp(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, T& out) {
+		template<typename T, glm::length_t N>
+		bool findCusp(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T>& p2, const glm::vec<N, T>& p3, T& out) {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::findCusp requires floating point types!" );
+			static_assert(N != 1, "ez::bezier::findCusp does not work for N == 1");
 			
-			glm::vec<2, T>
+			glm::vec<N, T>
 				a = T(3)* (-p0 + T(3)* p1 - T(3)* p2 + p3),
 				b = T(6)* (p0 - T(2)* p1 + p2),
 				c = T(3)* (p1 - p0);
 
-			std::array<T, 2> xroots, yroots;
-			int xcount = ez::poly::solveQuadratic(a.x, b.x, c.x, xroots.begin());
-			int ycount = ez::poly::solveQuadratic(a.y, b.y, c.y, yroots.begin());
+			std::array<int, 2 * N> dims;
+			std::array<T, 2 * N> roots;
+			int rcount = 0;
+			for (int i = 0; i < N; ++i) {
+				int count = ez::poly::solveQuadratic(a[i], b[i], c[i], &roots[rcount]);
+				for (int u = 0; u < count; ++u) {
+					dims[rcount + u] = i;
+				}
+				rcount += count;
+			}
+			if (rcount == 0) {
+				return false;
+			}
 
-			static constexpr T eps = ez::epsilon<T>() * T(3);
-
-			for (int x = 0; x < xcount; ++x) {
-				for (int y = 0; y < ycount; ++y) {
-					if (std::abs(xroots[x] - yroots[y]) < eps) {
-						// Found a place where derivative equals zero in both x and y.
-						out = xroots[x];
-						return true;
+			// Sort the results list, look for N consecutive elements in the list (one from each dim)
+			// Simple selection sort, should be very fast for arrays this small.
+			for (int i = 0; i < rcount; ++i) {
+				int mi = i;
+				for (int u = i+1; u < rcount; ++u) {
+					if (roots[u] < roots[mi]) {
+						mi = u;
 					}
 				}
+				std::swap(roots[i], roots[mi]);
+				std::swap(dims[i], dims[mi]);
 			}
+
+			static constexpr T eps = ez::epsilon<T>() * T(6);
+
+			// Number of consecutive found
+			int count = 1;
+			// index of first in consecutives
+			int first = 0;
+			// Dims passed
+			std::array<int, N> passed;
+			passed[0] = dims[0];
+
+			for (int i = 1; i < rcount; ++i) {
+				// The root is close enough to be valid
+				if (std::abs(roots[first] - roots[i]) < eps) {
+					// If we have NOT passed this dim already
+					if (std::find(passed.begin(), passed.begin() + count, dims[i]) == passed.end()) {
+						passed[count] = dims[i];
+						++count;
+
+						if (count == N) {
+							out = roots[first];
+							return true;
+						}
+					}
+				}
+				else {
+					count = 1;
+					first = i;
+					passed[0] = dims[i];
+				}
+			}
+
 			return false;
 		};
 	};
