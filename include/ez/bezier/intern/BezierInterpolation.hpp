@@ -72,6 +72,33 @@ namespace ez {
 			}
 		};
 
+		namespace intern {
+			// Expands an input iterator into a parameter pack, to call one of the above interpolate functions
+			// The only way to do this easily is to capture the input iterator and the t value.
+			template<typename T, typename Iter>
+			struct InterpExpander {
+				using vec_t = ez::iterator_value_t<Iter>;
+
+				Iter iter;
+				T t;
+
+				template<std::size_t N, typename ...Ts>
+				vec_t call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return bezier::interpolate(std::forward<Ts>(args)..., t);
+					}
+					else {
+						return call<N-1>(std::forward<Ts>(args)..., *iter++);
+					}
+				}
+			};
+		}
+		template<std::size_t N, typename T, typename Iter>
+		ez::iterator_value_t<Iter> interpolateStatic(Iter begin, T t) {
+			static_assert(N <= 4, "interpolateStatic does not support values of N greater than 4");
+			return intern::InterpExpander<T, Iter>{begin, t}.call<N>();
+		};
+
 		/*
 		template<typename T, typename Iter, std::enable_if_t<is_input_iterator<Iter>::value && std::is_floating_point<T>::value, int> = 0>
 		typename Iter::value_type surfaceInterpolate(Iter row0, Iter row1, T u, T v) {
