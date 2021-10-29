@@ -186,15 +186,15 @@ namespace ez {
 						glm::vec<2, T> m0 = glm::normalize(n0 + n1);
 						glm::vec<2, T> m1 = glm::normalize(n2 + n1);
 
-						n0 = base[0] + n0 * interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[0]);
+						n0 = base[0] + n0 * bezier::interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[0]);
 
 						m0 = bezier::interpolate(base[0], base[1], base[2], base[3], interp[1]) 
-							+ m0 * interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[1]);
+							+ m0 * bezier::interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[1]);
 
 						m1 = bezier::interpolate(base[0], base[1], base[2], base[3], interp[2])
-							+ m1 * interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[2]);
+							+ m1 * bezier::interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[2]);
 
-						n2 = base[3] + n2 * interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[3]);
+						n2 = base[3] + n2 * bezier::interpolate(taperBase[0], taperBase[1], taperBase[2], taperBase[3], interp[3]);
 
 						*output++ = n0;
 

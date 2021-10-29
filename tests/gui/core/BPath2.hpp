@@ -3,10 +3,8 @@
 #include <ez/meta.hpp>
 #include <cinttypes>
 #include <cassert>
-#include <cmath>
 #include <vector>
 #include <array>
-#include <limits>
 #include <glm/vec2.hpp>
 
 #include <ez/bezier/intern/BezierInterpolation.hpp>
@@ -14,77 +12,52 @@
 
 namespace ez {
 	template<typename vec_t>
-	class BPath {
+	struct Control {
+		bool corner;
+		vec_t position;
+	};
+
+	// This class is based on BPath from ez-interpolate
+	class ClosedPath {
 	public:
-		using value_type = vec_t;
-		using real_t = ez::vec_value_t<vec_t>;
-
-		static_assert(std::is_floating_point_v<real_t>, "ez::BPath requires floating point type!");
-
-		using Point = value_type;
+		using T = glm::vec2;
+		using vec_t = T;
+		using real_t = float;
 
 		using size_type = std::size_t;
-		using difference_type = std::ptrdiff_t;
+		using value_type = vec_t;
+
+		using Segment = std::array<vec_t, 4>;
+		struct Index {
+			size_type index;
+			real_t delta;
+		};
 
 		using reference = value_type&;
 		using pointer = value_type*;
 		using const_reference = const value_type&;
 		using const_pointer = const value_type*;
 
-		using Container = std::vector<Point>;
+		using Container = std::vector<value_type>;
 
 		using iterator = typename Container::iterator;
 		using const_iterator = typename Container::const_iterator;
 		using reverse_iterator = typename Container::reverse_iterator;
 		using const_reverse_iterator = typename Container::const_reverse_iterator;
 
-		using Segment = std::array<Point, 4>;
-		struct Index {
-			size_type index;
-			real_t delta;
-		};
+		~ClosedPath() = default;
+		ClosedPath(const ClosedPath&) = default;
+		ClosedPath(ClosedPath&&) noexcept = default;
+		ClosedPath& operator=(const ClosedPath&) = default;
+		ClosedPath& operator=(ClosedPath&&) noexcept = default;
 
-		BPath()
-			: open(true)
+		ClosedPath()
 		{}
 
-		BPath(size_type n, const_reference point, bool _open = true)
-			: open(_open)
-			, points(n, point)
+		ClosedPath(size_type n, const_reference point)
+			: points(n, point)
 		{}
 
-		template<typename Iter>
-		BPath(Iter first, Iter last, bool _open = true)
-			: open(_open)
-			, points(first, last)
-		{
-			static_assert(ez::is_input_iterator_v<Iter>, "ez::BPath::BPath requires an input iterator!");
-		}
-
-		BPath(const BPath& other)
-			: open(other.open)
-			, points(other.points)
-		{}
-
-		BPath(BPath&& other) noexcept
-			: open(other.open)
-			, points(std::move(other.points))
-		{}
-
-		BPath& operator=(const BPath& other) {
-			points = other.points;
-			open = other.open;
-
-			return *this;
-		}
-
-		BPath& operator=(BPath&& other) noexcept {
-			points = std::move(other.points);
-			open = other.open;
-
-			return *this;
-		}
-		
 		// Converts a real value between 0 and 1, into a segment index and an interpolation value for that segment
 		Index indexAt(real_t t) const {
 			t = std::max(real_t(0), std::max(t, real_t(0.999999)));
@@ -95,75 +68,31 @@ namespace ez {
 			return Index{ static_cast<size_type>(index), delta };
 		}
 
-		// The real meat of this class, what makes it useful.
+		// Calculate the controls of a cubic bezier curve at the specified index
 		Segment segmentAt(size_type i) const {
-			static constexpr real_t lower(8 / 12.0);
-			static constexpr real_t upper = real_t(1) - lower;
-
-			static constexpr real_t b = real_t{ 9 } / real_t{ 12 };
-			static constexpr real_t a = (1.0 - b) / 2.0;
-
 			assert(i < numSegments());
 			Segment seg;
 
 			vec_t p0, p1, p2;
 
-			if (isClosed()) {
-				size_type
-					i1 = wrapIndex(i + 1),
-					i2 = wrapIndex(i + 2),
-					i3 = wrapIndex(i + 3),
-					i4 = wrapIndex(i + 4);
+			i = i * 3;
 
-				p0 = points[i ] * a + points[i1] * b + points[i2] * a;
-				p1 = points[i1] * a + points[i2] * b + points[i3] * a;
-				p2 = points[i2] * a + points[i3] * b + points[i4] * a;
-			}
-			else {
-				if (i == 0) {
-					// first segment
-					p0 = points[0];
-					p1 = points[0]*a + points[1]*b + points[2]*a;
-					p2 = points[1]*a + points[2]*b + points[3]*a;
-				}
-				else if (i == (numPoints() - 3)) {
-					// last segment
-					p0 = points[points.size() - 4]*a + points[points.size() - 3]*b + points[points.size() - 2]*a;
-					p1 = points[points.size() - 3]*a + points[points.size() - 2]*b + points[points.size() - 1]*a;
-					p2 = points[points.size() - 1];
-				}
-				else {
-					// middle segment
-					i -= 1;
-					size_type
-						i1 = (i + 1),
-						i2 = (i + 2),
-						i3 = (i + 3),
-						i4 = (i + 4);
+			size_type
+				i1 = wrapIndex(i + 1),
+				i2 = wrapIndex(i + 2),
+				i3 = wrapIndex(i + 3);
 
-					p0 = points[i ] * a + points[i1] * b + points[i2] * a;
-					p1 = points[i1] * a + points[i2] * b + points[i3] * a;
-					p2 = points[i2] * a + points[i3] * b + points[i4] * a;
-				}
-			}
-
-			seg[0] = ez::bezier::interpolate(p0, p1, real_t{ 0.5 });
-			seg[3] = ez::bezier::interpolate(p1, p2, real_t{ 0.5 });
-
-			seg[1] = ez::bezier::interpolate(seg[0], p1, lower);
-			seg[2] = ez::bezier::interpolate(p1, seg[3], upper);
+			seg[0] = points[i];
+			seg[1] = points[i1];
+			seg[2] = points[i2];
+			seg[3] = points[i3];
 
 			return seg;
 		}
 
 		size_type numSegments() const {
-			if (points.size() > 3) {
-				if (isOpen()) {
-					return points.size() - size_type(2);
-				}
-				else {
-					return points.size();
-				}
+			if (points.size() > 2) {
+				return points.size() / 3;
 			}
 			else {
 				return 0;
@@ -182,12 +111,12 @@ namespace ez {
 			return total;
 		}
 
-		Point evalAt(Index index) const {
+		vec_t evalAt(Index index) const {
 			Segment seg = segmentAt(index.index);
 			return ez::bezier::interpolate(seg[0], seg[1], seg[2], seg[3], index.delta);
 		}
 
-		Point evalAt(real_t t) const {
+		vec_t evalAt(real_t t) const {
 			return evalAt(indexAt(t));
 		}
 
@@ -213,8 +142,8 @@ namespace ez {
 			return points.data();
 		}
 
-		constexpr bool empty() const {
-			return points.size();
+		bool empty() const {
+			return points.empty();
 		}
 
 		template<typename Iter>
@@ -228,7 +157,7 @@ namespace ez {
 			points.assign(n, point);
 		}
 
-		void assign(std::initializer_list<Point> il) {
+		void assign(std::initializer_list<value_type> il) {
 			points.assign(il);
 		}
 
@@ -244,7 +173,7 @@ namespace ez {
 
 			points.insert<Iter>(it, first, last);
 		}
-		void insert(const_iterator it, std::initializer_list<Point> il) {
+		void insert(const_iterator it, std::initializer_list<value_type> il) {
 			points.insert(it, il);
 		}
 
@@ -269,7 +198,7 @@ namespace ez {
 			return points.size();
 		}
 		size_type max_size() const {
-			return (size_type(1) << std::numeric_limits<real_t>::digits()) - 1;
+			return points.max_size();
 		}
 
 		reference front() {
@@ -321,13 +250,11 @@ namespace ez {
 			return points.crend();
 		}
 
-		void swap(BPath& other) noexcept {
+		void swap(ClosedPath& other) noexcept {
 			points.swap(other.points);
-			std::swap(open, other.open);
 		}
 
 		void clear() {
-			open = false;
 			points.clear();
 		}
 
@@ -340,27 +267,10 @@ namespace ez {
 		void pop_back() {
 			points.pop_back();
 		}
-
-		bool isOpen() const {
-			return open;
-		}
-		bool isClosed() const {
-			return !open;
-		}
-		void setOpen(bool value) {
-			open = value;
-		}
-		void setClosed(bool value) {
-			open = !value;
-		}
-
-		BPath clone() const {
-			return BPath{ *this };
-		}
 	private:
-		bool open;
-		Container points;
-		
+		std::vector<value_type> points;
+
+		// Wrap the index back around to the start of the indices, if it goes past the end
 		size_type wrapIndex(size_type i) const noexcept {
 			if (i >= numPoints()) {
 				i -= numPoints();

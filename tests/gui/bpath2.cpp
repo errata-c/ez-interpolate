@@ -2,6 +2,7 @@
 
 #include <glm/geometric.hpp>
 
+#include "BPath2.hpp"
 #include <ez/bezier/BPath.hpp>
 
 #include <gl/glew.h>
@@ -10,16 +11,23 @@
 
 class bpath : public Engine {
 public:
-	using Path = ez::BPath<glm::vec2>;
+	using Path = ez::ClosedPath;
 
 	bpath()
 		: Engine("BPath test")
 		, index(-1)
-		, closed(false)
+		, closed(true)
 	{
-		for (float t = 0, end = ez::tau<float>() * (11.0 / 12.0); t <= end; t += ez::tau<float>() / 6.f) {
-			path.append({ -std::cos(-t) * 0.4 + 0.5, std::sin(-t) * 0.4 + 0.5 });
+		for (float t = 0, end = ez::tau<float>() *(11.0 / 12.0); t <= end; t += ez::tau<float>() / 6.f) {
+			path.append({ -std::cos(-t)*0.4 +0.5, std::sin(-t)*0.4 +0.5 });
 		}
+		//path.append({ false, { 0.2, 0.8 } });
+		//path.append({ false, { 0.2, 0.2 }});
+		//path.append({ false, { 0.4, 0.1 }});
+
+		//path.append({ false, { 0.8, 0.2 }});
+		//path.append({ false, { 0.8, 0.8 }});
+		//path.append({ false, { 0.4, 0.9 }});
 	}
 	~bpath() {}
 
@@ -59,13 +67,9 @@ public:
 		}
 	}
 	void gui() override {
-		if (ImGui::Begin("BPath")) {
+		if (ImGui::Begin("PATH AAAAAA")) {
 			ImGui::Text("Points == %d", path.numPoints());
 			ImGui::Text("Segments == %d", path.numSegments());
-			
-			if (ImGui::Checkbox("Closed", &closed)) {
-				path.setClosed(closed);
-			}
 		}
 		ImGui::End();
 	}

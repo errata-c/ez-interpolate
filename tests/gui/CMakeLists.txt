@@ -30,9 +30,23 @@ target_include_directories(gui_test_interface PUBLIC
 )
 
 
-add_executable(approx_test "approx/main.cpp")
-target_link_libraries(approx_test PRIVATE gui_test_interface)
+add_executable(gui_approx_test "approx.cpp")
+target_link_libraries(gui_approx_test PRIVATE gui_test_interface)
 
-add_executable(bpath_test "bpath.cpp")
-target_link_libraries(bpath_test PRIVATE gui_test_interface)
+add_executable(gui_split_test "split.cpp")
+target_link_libraries(gui_split_test PRIVATE gui_test_interface)
 
+add_executable(gui_through_test "through.cpp")
+target_link_libraries(gui_through_test PRIVATE gui_test_interface)
+
+add_executable(gui_bpath_test "bpath.cpp")
+target_link_libraries(gui_bpath_test PRIVATE gui_test_interface)
+
+add_executable(gui_bpath2_test "bpath2.cpp")
+target_link_libraries(gui_bpath2_test PRIVATE gui_test_interface)
+
+add_executable(gui_length_test "length.cpp")
+target_link_libraries(gui_length_test PRIVATE gui_test_interface)
+
+add_executable(gui_offset_test "offset.cpp")
+target_link_libraries(gui_offset_test PRIVATE gui_test_interface)

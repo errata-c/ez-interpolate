@@ -8,7 +8,7 @@
 #include "nanovg.h"
 
 Engine::Engine(const char * title) 
-	: window(sf::VideoMode(640, 480), title)
+	: window(sf::VideoMode(800, 600), title)
 {
 	window.setFramerateLimit(60);
 	ImGui::SFML::Init(window);

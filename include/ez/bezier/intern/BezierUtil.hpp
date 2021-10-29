@@ -16,7 +16,9 @@ namespace glm {
 
 namespace ez {
 	namespace bezier {
-		// Returns the middle control, assuming p0 and p2 are the start and end controls.
+		
+		// Writes the new middle control using the output iterator.
+		// The final curve will have the same start and end points as the inputs.
 		template<typename vec_t, typename Iter>
 		void curveThrough(const vec_t& p0, const vec_t& p1, const vec_t& p2, Iter output) {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
@@ -29,6 +31,7 @@ namespace ez {
 		}
 
 		// Returns the two middle controls, assuming p0 and p3 are the start and end controls.
+		// The final curve will have the same start and end points as the inputs.
 		template<typename vec_t, typename Iter>
 		void curveThrough(const vec_t& a, const vec_t& k0, const vec_t& k1, const vec_t& d, Iter output) {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
