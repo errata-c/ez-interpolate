@@ -82,3 +82,28 @@ TEST_CASE("Cubic lengths") {
 		REQUIRE(compare[i] == Approx(results[i]));
 	}
 }
+
+TEST_CASE("Cubic lengths static") {
+	std::vector<glm::vec2>
+		c0{ glm::vec2{-1, 0}, glm::vec2{10, 4}, glm::vec2{4,  4}, glm::vec2{-2, 7} },
+		c1{ glm::vec2{-5, -3}, glm::vec2{6,   6}, glm::vec2{12, -5}, glm::vec2{-4,  4} },
+		c2{ glm::vec2{2,   7}, glm::vec2{7,  -9}, glm::vec2{19, 20}, glm::vec2{17, -14} };
+
+	std::vector<float> results;
+
+	results.push_back(bezier::lengthStatic<4>(c0.begin()));
+	results.push_back(bezier::lengthStatic<4>(c1.begin()));
+	results.push_back(bezier::lengthStatic<4>(c2.begin()));
+
+	// Arclengths calculated via integral on desmos
+	std::vector<float> compare{ {
+		15.3287558818,
+		22.543772666,
+		33.7856427598
+	} };
+
+	for (int i = 0; i < results.size(); ++i) {
+		INFO("i == " << i);
+		REQUIRE(compare[i] == Approx(results[i]));
+	}
+}

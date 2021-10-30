@@ -248,7 +248,8 @@ namespace ez {
 			rightSplit(tmp[0], tmp[1], tmp[2], tmp[3], t0, output);
 		};
 
-
+		// The expanders take iterators and expand them into arguments for the above functions
+		// This makes it easier to do certain kinds of meta-programming.
 		namespace intern {
 			template<typename vec_t, typename U, typename output_iter, typename input_iter>
 			struct LeftSplitExpander {

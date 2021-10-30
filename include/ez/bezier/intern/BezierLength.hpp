@@ -217,5 +217,29 @@ namespace ez {
 
 			return len;
 		}
+
+		namespace intern {
+			template<typename Iter>
+			struct LengthExpander {
+				using vec_t = ez::iterator_value_t<Iter>;
+				using T = vec_value_t<vec_t>;
+				Iter iter;
+
+				template<std::size_t N, typename ...Ts>
+				T call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return bezier::length(std::forward<Ts>(args)...);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *iter++);
+					}
+				}
+			};
+		}
+
+		template<std::size_t N, typename Iter>
+		decltype(auto) lengthStatic(Iter input) {
+			return intern::LengthExpander<Iter>{input}.call<N>();
+		}
 	};
 };
