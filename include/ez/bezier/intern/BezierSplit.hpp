@@ -258,7 +258,7 @@ namespace ez {
 				U t;
 
 				template<std::size_t N, typename ...Ts>
-				vec_t call(Ts&&... args) {
+				void call(Ts&&... args) {
 					if constexpr (N == 0) {
 						return bezier::leftSplit(std::forward<Ts>(args)..., t, output);
 					}
@@ -275,7 +275,7 @@ namespace ez {
 				U t;
 
 				template<std::size_t N, typename ...Ts>
-				vec_t call(Ts&&... args) {
+				void call(Ts&&... args) {
 					if constexpr (N == 0) {
 						return bezier::rightSplit(std::forward<Ts>(args)..., t, output);
 					}
@@ -284,6 +284,15 @@ namespace ez {
 					}
 				}
 			};
+		}
+
+		template<std::size_t N, typename U, typename input_iter, typename output_iter>
+		void leftSplitStatic(input_iter input, U t, output_iter output) {
+			intern::LeftSplitExpander<ez::iterator_value_t<input_iter>, U, output_iter, input_iter>{input, output, t}.call<N>();
+		}
+		template<std::size_t N, typename U, typename input_iter, typename output_iter>
+		void rightSplitStatic(input_iter input, U t, output_iter output) {
+			intern::RightSplitExpander<ez::iterator_value_t<input_iter>, U, output_iter, input_iter>{input, output, t}.call<N>();
 		}
 	};
 }

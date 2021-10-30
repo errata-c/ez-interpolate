@@ -118,6 +118,50 @@ namespace ez {
 			*output++ = T(3) * (p3 - p2);
 		};
 
+		namespace intern {
+			template<typename input_iter, typename output_iter>
+			struct DerivativeExpander {
+				input_iter input;
+				output_iter output;
+
+				template<std::size_t N, typename ... Ts>
+				void call(Ts&&... args) {
+					if constexpr (N == 0) {
+						derivative(std::forward<Ts>(args)..., output);
+					}
+					else {
+						call<N-1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
+
+			template<typename input_iter, typename T>
+			struct DerivativeAtExpander {
+				using vec_t = ez::iterator_value_t<input_iter>;
+
+				input_iter input;
+				T t;
+
+				template<std::size_t N, typename ... Ts>
+				vec_t call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return derivativeAt(std::forward<Ts>(args)..., t);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
+		}
+
+		template<std::size_t N, typename input_iter, typename T, typename output_iter>
+		void derivativeStatic(input_iter input, output_iter output) {
+			intern::DerivativeExpander<input_iter, output_iter>{input, output}.call<N>();
+		}
+		template<std::size_t N, typename input_iter, typename T>
+		ez::iterator_value_t<input_iter> derivativeAtStatic(input_iter input, T t) {
+			return intern::DerivativeAtExpander<input_iter, T>{input, t}.call<N>();
+		}
 
 		/*
 		template<typename T, typename Iter>
