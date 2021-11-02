@@ -72,7 +72,6 @@ namespace ez::bezier {
 			// The number of points written.
 			std::ptrdiff_t count = 0;
 
-			// To support negative offsets
 			std::array<vec_t, N> base = points, n, offset;
 			std::array<T, M> tbase = tapers;
 
@@ -109,7 +108,7 @@ namespace ez::bezier {
 						start = range;
 						range = T(1);
 						bezier::rightSplitStatic<N>(points.begin(), start, base.begin());
-						bezier::rightSplitStatic<M>(tbase.begin(), start, tbase.begin());
+						bezier::rightSplitStatic<M>(tapers.begin(), start, tbase.begin());
 						continue;
 					}
 					else {
