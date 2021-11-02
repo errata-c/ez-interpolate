@@ -75,6 +75,67 @@ namespace ez::bezier {
 		intern::CoefficientsExpander<input_iter, output_iter>{input, output}.call<N>();
 	}
 
+	template<typename vec_t, typename output_iter>
+	int findExtrema(const vec_t& p0, const vec_t& p1, const vec_t & p2, output_iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::findExtrema requires glm vector types!");
+		using T = ez::vec_value_t<vec_t>;
+		constexpr std::size_t Dim = ez::vec_length_v<vec_t>;
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::findExtrema requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::findExtrema requires an output iterator as last argument!");
+		static_assert(ez::is_iterator_writable_v<output_iter, T>, "ez::bezier::findExtrema requires that the output iterator accept floating point values!");
+
+		std::array<vec_t, 3> coeff;
+		coefficients(p0, p1, p2, &coeff[0]);
+
+		coeff[0] *= T(2);
+
+		int count = 0;
+		std::array<T, 2 * Dim> roots;
+		for (int i = 0; i < Dim; ++i) {
+			count += ez::poly::solveLinear((&coeff[0])[i], (&coeff[1])[i], (&roots[0]) + count);
+		}
+
+		int valid = 0;
+		for (int i = 0; i < count; ++i) {
+			if (T(0) <= roots[i] && roots[i] <= T(1)) {
+				*output++ = roots[i];
+				++valid;
+			}
+		}
+		return valid;
+	}
+
+	template<typename vec_t, typename output_iter>
+	int findExtrema(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, output_iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::findExtrema requires glm vector types!");
+		using T = ez::vec_value_t<vec_t>;
+		constexpr std::size_t Dim = ez::vec_length_v<vec_t>;
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::findExtrema requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::findExtrema requires an output iterator as last argument!");
+		static_assert(ez::is_iterator_writable_v<output_iter, T>, "ez::bezier::findExtrema requires that the output iterator accept floating point values!");
+
+		std::array<vec_t, 4> coeff;
+		coefficients(p0, p1, p2, p3, &coeff[0]);
+
+		coeff[0] *= T(3);
+		coeff[1] *= T(2);
+
+		int count = 0;
+		std::array<T, 2 * Dim> roots;
+		for (int i = 0; i < Dim; ++i) {
+			count += ez::poly::solveQuadratic((&coeff[0])[i], (&coeff[1])[i], (&coeff[2])[i], (&roots[0]) + count);
+		}
+
+		int valid = 0;
+		for (int i = 0; i < count; ++i) {
+			if (T(0) <= roots[i] && roots[i] <= T(1)) {
+				*output++ = roots[i];
+				++valid;
+			}
+		}
+		return valid;
+	}
+
 	// Function for finding the cusp on a cubic curve, if it exists.
 	template<typename T, glm::length_t N>
 	bool findCusp(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T>& p2, const glm::vec<N, T>& p3, T& out) {
