@@ -46,7 +46,7 @@ namespace ez {
 		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, T t) {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
-			glm::tvec2<T> tmp = tangent(p0, p1, t);
+			glm::tvec2<T> tmp = tangentAt(p0, p1, t);
 			return glm::tvec2<T>{ -tmp.y, tmp.x };
 		};
 
@@ -64,7 +64,7 @@ namespace ez {
 		glm::tvec2<T> normalAt(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T t) {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
-			glm::tvec2<T> tmp = tangent(p0, p1, p2, t);
+			glm::tvec2<T> tmp = tangentAt(p0, p1, p2, t);
 			return glm::tvec2<T>{ -tmp.y, tmp.x };
 		};
 
@@ -80,7 +80,7 @@ namespace ez {
 		glm::tvec2<T> normalAt(const glm::tvec2<T>& p0, const glm::tvec2<T>& p1, const glm::tvec2<T>& p2, const glm::tvec2<T>& p3, T t) {
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::normal requires floating point types!");
 
-			glm::tvec2<T> tmp = tangent(p0, p1, p2, p3, t);
+			glm::tvec2<T> tmp = tangentAt(p0, p1, p2, p3, t);
 			return glm::tvec2<T>{ -tmp.y, tmp.x };
 		};
 
@@ -167,6 +167,24 @@ namespace ez {
 					}
 				}
 			};
+
+			template<typename input_iter, typename T>
+			struct NormalAtExpander {
+				using vec_t = ez::iterator_value_t<input_iter>;
+
+				input_iter input;
+				T t;
+
+				template<std::size_t N, typename ... Ts>
+				vec_t call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return normalAt(std::forward<Ts>(args)..., t);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
 		}
 
 		template<std::size_t N, typename input_iter, typename T, typename output_iter>
@@ -180,6 +198,10 @@ namespace ez {
 		template<std::size_t N, typename input_iter, typename T>
 		ez::iterator_value_t<input_iter> tangentAtStatic(input_iter input, T t) {
 			return intern::TangentAtExpander<input_iter, T>{input, t}.call<N>();
+		}
+		template<std::size_t N, typename input_iter, typename T>
+		ez::iterator_value_t<input_iter> normalAtStatic(input_iter input, T t) {
+			return intern::NormalAtExpander<input_iter, T>{input, t}.call<N>();
 		}
 
 		/*

@@ -42,4 +42,27 @@ namespace ez::bezier {
 		*output++ = b;
 		*output++ = c;
 	}
+
+	namespace intern {
+		template<typename input_iter, typename output_iter>
+		struct CurveThroughExpander {
+			input_iter input;
+			output_iter output;
+
+			template<std::size_t N, typename ...Ts>
+			void call(Ts&&... args) {
+				if constexpr (N == 0) {
+					return bezier::curveThrough(std::forward<Ts>(args)..., output);
+				}
+				else {
+					return call<N - 1>(std::forward<Ts>(args)..., *input++);
+				}
+			}
+		};
+	}
+
+	template<std::size_t N, typename input_iter, typename output_iter>
+	void curveThroughStatic(input_iter input, output_iter output) {
+		return intern::CurveThroughExpander<input_iter, output_iter>{input, output}.call<N>();
+	}
 };

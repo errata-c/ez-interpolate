@@ -3,6 +3,7 @@
 #include <glm/geometric.hpp>
 
 #include <ez/bezier/Bezier.hpp>
+#include <fmt/core.h>
 
 #include <gl/glew.h>
 #include "nanovg.h"
@@ -38,20 +39,24 @@ public:
 			if (ev.type == ez::InputEventType::MousePress && ev.mouse.buttons == ez::Mouse::Left) {
 				glm::vec2 mpos = ev.mouse.position;
 
-				float dist2 = 8;
+				float threshold = 12;
 				std::ptrdiff_t select = -1;
 
 				std::ptrdiff_t count = static_cast<std::ptrdiff_t>(4);
 				for (std::ptrdiff_t i = 0; i < count; ++i) {
 					glm::vec2 cpos = curve[i];
-					float dist1 = glm::length(cpos - mpos);
-					if (dist1 < dist2) {
+					float dist = glm::length(cpos - mpos);
+					if (dist < threshold) {
 						select = i;
-						dist2 = dist1;
+						threshold = dist;
 					}
 				}
 
 				index = select;
+			}
+
+			if (index != -1) {
+				fmt::print("Just selected control[{}]\n", index);
 			}
 		}
 		else {

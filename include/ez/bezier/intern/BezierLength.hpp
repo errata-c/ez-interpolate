@@ -190,10 +190,10 @@ namespace ez {
 		}
 
 		// This function needs some testing.
-		template<typename Iter>
-		ez::iterator_value_t<Iter> lengthRange(Iter begin, Iter end) {
-			using vec_t = ez::iterator_value_t<Iter>;
-			static_assert(ez::is_random_iterator_v<Iter>, "ez::bezier::lengthRange requires a random access iterator!");
+		template<typename input_iter>
+		ez::iterator_value_t<input_iter> lengthRange(input_iter begin, input_iter end) {
+			using vec_t = ez::iterator_value_t<input_iter>;
+			static_assert(ez::is_random_iterator_v<input_iter>, "ez::bezier::lengthRange requires a random access iterator!");
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::lengthRange requires vector types!");
 			using T = ez::vec_value_t<vec_t>;
 			static_assert(std::is_floating_point_v<T>, "ez::bezier::lengthRange requires floating point types!");
@@ -219,11 +219,11 @@ namespace ez {
 		}
 
 		namespace intern {
-			template<typename Iter>
+			template<typename input_iter>
 			struct LengthExpander {
-				using vec_t = ez::iterator_value_t<Iter>;
+				using vec_t = ez::iterator_value_t<input_iter>;
 				using T = vec_value_t<vec_t>;
-				Iter iter;
+				input_iter input;
 
 				template<std::size_t N, typename ...Ts>
 				T call(Ts&&... args) {
@@ -231,15 +231,15 @@ namespace ez {
 						return bezier::length(std::forward<Ts>(args)...);
 					}
 					else {
-						return call<N - 1>(std::forward<Ts>(args)..., *iter++);
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
 					}
 				}
 			};
 		}
 
-		template<std::size_t N, typename Iter>
-		decltype(auto) lengthStatic(Iter input) {
-			return intern::LengthExpander<Iter>{input}.call<N>();
+		template<std::size_t N, typename input_iter>
+		decltype(auto) lengthStatic(input_iter input) {
+			return intern::LengthExpander<input_iter>{input}.call<N>();
 		}
 	};
 };
