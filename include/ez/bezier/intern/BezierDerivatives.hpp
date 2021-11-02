@@ -1,8 +1,5 @@
 #pragma once
 #include <ez/meta.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtx/norm.hpp>
 
@@ -152,6 +149,24 @@ namespace ez {
 					}
 				}
 			};
+
+			template<typename input_iter, typename T>
+			struct TangentAtExpander {
+				using vec_t = ez::iterator_value_t<input_iter>;
+
+				input_iter input;
+				T t;
+
+				template<std::size_t N, typename ... Ts>
+				vec_t call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return tangentAt(std::forward<Ts>(args)..., t);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
 		}
 
 		template<std::size_t N, typename input_iter, typename T, typename output_iter>
@@ -161,6 +176,10 @@ namespace ez {
 		template<std::size_t N, typename input_iter, typename T>
 		ez::iterator_value_t<input_iter> derivativeAtStatic(input_iter input, T t) {
 			return intern::DerivativeAtExpander<input_iter, T>{input, t}.call<N>();
+		}
+		template<std::size_t N, typename input_iter, typename T>
+		ez::iterator_value_t<input_iter> tangentAtStatic(input_iter input, T t) {
+			return intern::TangentAtExpander<input_iter, T>{input, t}.call<N>();
 		}
 
 		/*

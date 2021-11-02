@@ -251,11 +251,11 @@ namespace ez {
 		// The expanders take iterators and expand them into arguments for the above functions
 		// This makes it easier to do certain kinds of meta-programming.
 		namespace intern {
-			template<typename vec_t, typename U, typename output_iter, typename input_iter>
+			template<typename input_iter, typename T, typename output_iter>
 			struct LeftSplitExpander {
 				input_iter input;
 				output_iter output;
-				U t;
+				T t;
 
 				template<std::size_t N, typename ...Ts>
 				void call(Ts&&... args) {
@@ -263,16 +263,16 @@ namespace ez {
 						return bezier::leftSplit(std::forward<Ts>(args)..., t, output);
 					}
 					else {
-						return call<N - 1>(std::forward<Ts>(args)..., *iter++);
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
 					}
 				}
 			};
 
-			template<typename vec_t, typename U, typename output_iter, typename input_iter>
+			template<typename input_iter, typename T, typename output_iter>
 			struct RightSplitExpander {
 				input_iter input;
 				output_iter output;
-				U t;
+				T t;
 
 				template<std::size_t N, typename ...Ts>
 				void call(Ts&&... args) {
@@ -280,19 +280,42 @@ namespace ez {
 						return bezier::rightSplit(std::forward<Ts>(args)..., t, output);
 					}
 					else {
-						return call<N - 1>(std::forward<Ts>(args)..., *iter++);
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
+
+			template<typename input_iter, typename output_iter>
+			struct SplitExpander {
+				input_iter input;
+				output_iter output;
+
+				template<std::size_t N, typename ...Ts>
+				void call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return bezier::rightSplit(std::forward<Ts>(args)..., output);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
 					}
 				}
 			};
 		}
 
-		template<std::size_t N, typename U, typename input_iter, typename output_iter>
-		void leftSplitStatic(input_iter input, U t, output_iter output) {
-			intern::LeftSplitExpander<ez::iterator_value_t<input_iter>, U, output_iter, input_iter>{input, output, t}.call<N>();
-		}
-		template<std::size_t N, typename U, typename input_iter, typename output_iter>
-		void rightSplitStatic(input_iter input, U t, output_iter output) {
-			intern::RightSplitExpander<ez::iterator_value_t<input_iter>, U, output_iter, input_iter>{input, output, t}.call<N>();
-		}
+		template<std::size_t N, typename input_iter, typename T, typename output_iter>
+		void leftSplitStatic(input_iter input, T t, output_iter output) {
+			static_assert(N <= 4, "ez::bezier::leftSplitStatic currently only allows for N < 5!");
+			intern::LeftSplitExpander<input_iter, T, output_iter>{input, output, t}.call<N>();
+		};
+		template<std::size_t N, typename input_iter, typename T, typename output_iter>
+		void rightSplitStatic(input_iter input, T t, output_iter output) {
+			static_assert(N <= 4, "ez::bezier::rightSplitStatic currently only allows for N < 5!");
+			intern::RightSplitExpander<input_iter, T, output_iter>{input, output, t}.call<N>();
+		};
+		template<std::size_t N, typename input_iter, typename output_iter>
+		void splitStatic(input_iter input, output_iter output) {
+			static_assert(N <= 4, "ez::bezier::splitStatic currently only allows for N < 5!");
+			intern::SplitExpander<input_iter, output_iter>{input, output}.call<N>();
+		};
 	};
 }

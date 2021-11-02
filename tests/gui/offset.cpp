@@ -10,6 +10,15 @@
 
 class Offset : public Engine {
 public:
+	glm::vec4 taperValues;
+	float offsetValue;
+
+	std::ptrdiff_t index;
+	std::array<glm::vec2, 4> curve;
+	std::vector<glm::vec2> offset;
+
+	int mode;
+
 	Offset()
 		: Engine("Bezier Offsets")
 		, index(-1)
@@ -21,6 +30,7 @@ public:
 		curve[3] = glm::vec2(700, 500);
 
 		taperValues = { 0, 32, 32, 0 };
+		offsetValue = 32;
 	}
 
 	void handleEvent(const ez::InputEvent& ev) override {
@@ -60,14 +70,25 @@ public:
 		ImGui::Begin("Edit");
 
 		ImGui::RadioButton("Taper", &mode, 1);
+		ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, 0.f, 128.f, "%.0f", 1.f);
 		ImGui::RadioButton("Normal", &mode, 2);
-
-		ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, 0.f, 64.f, "%.0f", 1.f);
+		ImGui::DragFloat("Offset", &offsetValue, 1.f, 0.f, 128.f, "%.0f", 1.f);
+		
 
 		ImGui::End();
 	}
 
 	void render() override {
+		float t;
+		if (ez::bezier::findCusp(curve[0], curve[1], curve[2], curve[3], t)) {
+			glm::vec2 cusp = ez::bezier::interpolateStatic<4>(curve.begin(), t);
+			
+			fillColor(0.1, 0.1, 0.1);
+			beginPath();
+			circle(cusp, 12.f);
+			fill();
+		}
+
 		strokeColor(0, 0, 0);
 		fillColor(0.2, 0.2, 0.2);
 		strokeWidth(3);
@@ -78,12 +99,14 @@ public:
 		stroke();
 
 		offset.clear();
+		std::ptrdiff_t count = 0;
 		if (mode == 1) {
-			ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], taperValues, std::back_inserter(offset));
+			count = ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], taperValues, std::back_inserter(offset));
 		}
 		else {
-			ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], 32.f, std::back_inserter(offset));
+			count = ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], offsetValue, std::back_inserter(offset));
 		}
+		assert(count == offset.size());
 
 		if (offset.size() > 0) {
 			beginPath();
@@ -106,24 +129,25 @@ public:
 			fill();
 		}
 
-		fillColor(0.4, 0.4, 0.4);
-		for (std::size_t i = 0; i < offset.size(); i += 4) {
+		
+		for (std::size_t i = 0; i < offset.size(); ++i) {
+			std::size_t mod = i % 4;
+			if (mod == 0 || mod == 3) {
+				fillColor(0.4, 1.0, 0.4);
+			}
+			else {
+				fillColor(0.4, 1.0, 1.0);
+			}
 			beginPath();
-			circle(offset[i], 10.f);
+			circle(offset[i], 4.f);
 			fill();
 		}
 		beginPath();
-		circle(offset.back(), 10.f);
+		circle(offset.back(), 4.f);
 		fill();
 	}
 
-	glm::vec4 taperValues;
-
-	std::ptrdiff_t index;
-	std::array<glm::vec2, 4> curve;
-	std::vector<glm::vec2> offset;
-
-	int mode;
+	
 };
 
 int main() {

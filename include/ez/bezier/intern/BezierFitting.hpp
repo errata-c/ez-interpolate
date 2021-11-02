@@ -1,288 +1,45 @@
 #pragma once
 #include <ez/meta.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/geometric.hpp>
-#include <glm/gtx/norm.hpp>
 #include "BezierInterpolation.hpp"
 
-namespace ez {
-	namespace bezier {
-		// This whole section is iffy...
+namespace ez::bezier {
+	// Writes the new middle control using the output iterator.
+	// The final curve will have the same start and end points as the inputs.
+	template<typename vec_t, typename Iter>
+	void curveThrough(const vec_t& p0, const vec_t& p1, const vec_t& p2, Iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
+		using T = vec_value_t<vec_t>;
 
-		static constexpr double alph = 0.05;
-		static constexpr double gamma = 0.9999;
-		static constexpr std::size_t itermin = 45;
+		static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
+		static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
-		template<typename VecIter, typename ValueIter, typename OutIter>
-		void fitCubic(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter output) {
-			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
+		*output++ = (p1 - p0 * T(0.25) - p2 * T(0.25)) * T(2.0);
+	}
 
-			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename ez::is_vec<vec_t>::value_type;
+	// Returns the two middle controls, assuming p0 and p3 are the start and end controls.
+	// The final curve will have the same start and end points as the inputs.
+	template<typename vec_t, typename Iter>
+	void curveThrough(const vec_t& a, const vec_t& k0, const vec_t& k1, const vec_t& d, Iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::curveThrough requires vector types!");
+		using T = vec_value_t<vec_t>;
 
-			static_assert(std::is_floating_point<std::remove_reference_t<decltype(*valueStart)>>::value, "The value iterator passed in must have floating point values!");
-			
-			assert((vecEnd - vecStart) == (valueEnd - valueStart));
-			std::size_t count = vecEnd - vecStart;
-			if (count == 0) {
-				return;
-			}
+		static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::curveThrough requires an output iterator!");
+		static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::curveThrough cannot convert vector type to iterator value_type!");
 
-			std::array<vec_t, 4> param{
-				vec_t{T(0)},
-				vec_t{T(0)},
-				vec_t{T(0)},
-				vec_t{T(0)},
-			};
-			std::array<vec_t, 4> pgrad2 = param;
+		vec_t b =
+			T(54.0 / 18.0) * k0 +
+			T(-27.0 / 18.0) * k1 +
+			T(-15.0 / 18.0) * a +
+			T(6.0 / 18.0) * d;
 
-			std::array<T, 4> coeff;
+		vec_t c =
+			T(27.0 / 6.0) * k0 +
+			T(-8.0 / 6.0) * a +
+			T(-12.0 / 6.0) * b +
+			T(-1.0 / 6.0) * d;
 
-			//static constexpr T gama = T(0.9999), igama = T(1) - gama;
-			T igamma = T(1) - T(gamma);
-
-			static constexpr T eps = T(1E-8);
-			//static constexpr T alph = T(0.03);
-
-			std::size_t iterations;
-			if (count > itermin) {
-				iterations = 1;
-			}
-			else {
-				iterations = (itermin / count) + 1;
-			}
-
-			for (int iterNum = 0; iterNum < iterations; ++iterNum) {
-				VecIter vecIt = vecStart;
-				ValueIter valIt = valueStart;
-
-				while (vecIt != vecEnd) {
-
-					vec_t coord = *vecIt;
-					T t = *valIt;
-
-					{
-						T t1 = T(1) - t;
-						T tt = t * t;
-						T t1t1 = t1 * t1;
-						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * T(3);
-						coeff[2] = (tt * t1) * T(3);
-						coeff[3] = (tt * t);
-					}
-
-					T error = -coord + (param[0] * coeff[0] + param[1] * coeff[1] + param[2] * coeff[2] + param[3] * coeff[3]);
-
-					for (int i = 0; i < 4; ++i) {
-						vec_t grad = error * coeff[i];
-						//pgrad2[i] = (pgrad2[i] + std::abs(grad)) * gamma + igamma * pgrad2[i];
-						pgrad2[i] = pgrad2[i] * T(gamma) + grad * grad * igamma;
-
-						vec_t delparam = -(T(alph) * grad) / std::sqrt(pgrad2[i] + eps);
-
-						param[i] += delparam;
-					}
-
-					++valIt;
-					++vecIt;
-				}
-			}
-
-			for (vec_t & p : param) {
-				(*output) = p;
-				++output;
-			}
-		};
-
-		template<typename VecIter, typename ValueIter, typename OutIter>
-		void fitCubicADAGRAD(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter output) {
-			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
-
-			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename ez::is_vec<vec_t>::value_type;
-
-			static_assert(std::is_floating_point<decltype(*valueStart)>::value, "The value iterator passed in must have floating point values!");
-
-			assert((vecEnd - vecStart) == (valueEnd - valueStart));
-			std::size_t count = vecEnd - vecStart;
-			if (count == 0) {
-				return;
-			}
-
-			std::array<vec_t, 4> param{
-				vec_t{T(0)},
-				vec_t{T(0)},
-				vec_t{T(0)},
-				vec_t{T(0)},
-			};
-			std::array<vec_t, 4> pgrad2 = param;
-
-			std::array<T, 4> coeff;
-
-			//static constexpr T gama = T(0.9999), igama = T(1) - gama;
-			T igama = T(1) - T(gamma);
-
-			static constexpr T eps = T(1E-8);
-			//static constexpr T alph = T(0.03);
-
-
-
-			std::size_t iterations;
-			if (count > itermin) {
-				iterations = 1;
-			}
-			else {
-				iterations = (itermin / count) + 1;
-			}
-
-			for (int i = 0; i < iterations; ++i) {
-				VecIter vecIt = vecStart;
-				ValueIter valIt = valueStart;
-
-				while (vecIt != vecEnd) {
-
-					vec_t coord = *vecIt;
-					T t = *valIt;
-
-					{
-						T t1 = T(1) - t;
-						T tt = t * t;
-						T t1t1 = t1 * t1;
-						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * T(3);
-						coeff[2] = (tt * t1) * T(3);
-						coeff[3] = (tt * t);
-					}
-
-					T error = -coord + (param[0] * coeff[0] + param[1] * coeff[1] + param[2] * coeff[2] + param[3] * coeff[3]);
-
-					for (int i = 0; i < 4; ++i) {
-						vec_t grad = error * coeff[i];
-						pgrad2[i] = pgrad2[i] * T(gamma) + grad * grad * igama;
-
-						vec_t delparam = -(T(alph) * grad) / (std::sqrt(pgrad2[i]) + eps);
-
-						param[i] += delparam;
-					}
-
-					++valIt;
-					++vecIt;
-				}
-			}
-
-			for (vec_t& p : param) {
-				(*output) = p;
-				++output;
-			}
-		};
-
-		template<typename VecIter, typename ValueIter, typename OutIter>
-		void fitCubicSurface(VecIter vecStart, VecIter vecEnd, ValueIter valueStart, ValueIter valueEnd, OutIter outputRow0, OutIter outputRow1, OutIter outputRow2, OutIter outputRow3) {
-			static_assert(ez::is_random_iterator<VecIter>::value, "The vector valued iterator passed in must be random access!");
-			using vec_t = typename ez::is_random_iterator<VecIter>::vec_t;
-
-			static_assert(ez::is_output_iterator<OutIter, vec_t>::value, "The iterator passed in is not a proper output iterator!");
-			using T = typename ez::is_vec<vec_t>::value_type;
-
-			static_assert(std::is_floating_point<decltype(*valueStart)>::value, "The value iterator passed in must have floating point values!");
-
-			assert((vecEnd - vecStart) == (valueEnd - valueStart));
-			std::size_t count = vecEnd - vecStart;
-			if (count == 0) {
-				return;
-			}
-
-			std::array<std::array<vec_t, 4>, 4> param{
-				std::array<vec_t, 4 >> {
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-				},
-				std::array<vec_t, 4 >> {
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-				},
-				std::array<vec_t, 4 >> {
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-				},
-				std::array<vec_t, 4 >> {
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-					vec_t{T(0)},
-				}
-			};
-			std::array<std::array<vec_t, 4>, 4> pgrad2 = param;
-
-			std::array<T, 4> coeff;
-
-			static constexpr T gama = T(0.9999), igama = T(1) - gama;
-
-			static constexpr T eps = T(1E-8);
-			static constexpr T alph = T(0.03);
-
-			static constexpr std::size_t itermin = 45;
-
-			std::size_t iterations;
-			if (count > itermin) {
-				iterations = 1;
-			}
-			else {
-				iterations = (itermin / count) + 1;
-			}
-
-			/*
-				Figure out some kind of randomization for this, to reduce the bias.
-			*/
-			for (int i = 0; i < iterations; ++i) {
-				VecIter vecIt = vecStart;
-				ValueIter valIt = valueStart;
-
-				while (vecIt != vecEnd) {
-
-					vec_t coord = *vecIt;
-					T t = *valIt;
-
-					{
-						T t1 = T(1) - t;
-						T tt = t * t;
-						T t1t1 = t1 * t1;
-						coeff[0] = (t1t1 * t1);
-						coeff[1] = (t1t1 * t) * T(3);
-						coeff[2] = (tt * t1) * T(3);
-						coeff[3] = (tt * t);
-					}
-
-					T error = -coord + (param[0] * coeff[0] + param[1] * coeff[1] + param[2] * coeff[2] + param[3] * coeff[3]);
-
-					for (int i = 0; i < 4; ++i) {
-						vec_t grad = error * coeff[i];
-						pgrad2[i] = pgrad2[i] * gama + grad * grad * igama;
-
-						vec_t delparam = -(alph / glm::sqrt(pgrad2[i] + eps)) * grad;
-
-						param[i] += delparam;
-					}
-
-					++valIt;
-					++vecIt;
-				}
-			}
-
-			for (vec_t& p : param) {
-				(*output) = p;
-				++output;
-			}
-		};
-	};
+		*output++ = b;
+		*output++ = c;
+	}
 };
