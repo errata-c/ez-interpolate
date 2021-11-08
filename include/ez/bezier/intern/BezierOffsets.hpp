@@ -24,6 +24,13 @@ namespace ez::bezier {
 			T range = T(1);
 			T start = T(0);
 
+			{ // Write the first point of the offset
+				vec_t startNorm = bezier::normalAtStatic<N>(base.begin(), T(0));
+				vec_t startPoint = base[0] + startNorm * delta;
+				*output++ = startPoint;
+				count++;
+			}
+
 			while (start < range) {
 				for (int i = 0; i < N; ++i) {
 					n[i] = bezier::normalAtStatic<N>(base.begin(), T(i) / T(N-1));
@@ -41,10 +48,12 @@ namespace ez::bezier {
 				}
 				else {
 					// Finalize the current offset segment, check if we are done.
-					for (int i = 0; i < N; ++i) {
+
+					// Write the next three controls
+					for (int i = 1; i < N; ++i) {
 						*output++ = offset[i];
 					}
-					count += N;
+					count += N-1;
 
 					if (range < T(1)) {
 						// Move to next segment.
@@ -78,6 +87,13 @@ namespace ez::bezier {
 			T range = T(1);
 			T start = T(0);
 
+			{ // Write the first point of the offset
+				vec_t startNorm = bezier::normalAtStatic<N>(base.begin(), T(0));
+				vec_t startPoint = base[0] + startNorm * tapers[0];
+				*output++ = startPoint;
+				count++;
+			}
+
 			while (start < range) {
 				for (int i = 0; i < N; ++i) {
 					T interp = T(i) / T(N - 1);
@@ -98,10 +114,10 @@ namespace ez::bezier {
 				}
 				else {
 					// Finalize the current offset segment, check if we are done.
-					for (int i = 0; i < N; ++i) {
+					for (int i = 1; i < N; ++i) {
 						*output++ = offset[i];
 					}
-					count += N;
+					count += N - 1;
 
 					if (range < T(1)) {
 						// Move to next segment.
@@ -124,37 +140,39 @@ namespace ez::bezier {
 	}; // End namespace intern
 
 	// Offset a quadratic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
-	template<typename T, typename Iter>
-	std::ptrdiff_t pixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T delta, Iter output) {
-		static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+	template<typename T, typename output_iter>
+	std::ptrdiff_t pixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, T delta, output_iter output) {
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::pixelOffset requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::pixelOffset requires an output iterator as its last argument!");
 		using vec_t = glm::vec<2, T>;
-		static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::pixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 3> points{ p0, p1, p2 };
-		return intern::simplePixelOffset(points, -delta, output);
+		return intern::simplePixelOffset(points, delta, output);
 	}
 
 	// Offset a cubic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
-	template<typename T, typename Iter>
-	std::ptrdiff_t pixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, T delta, Iter output) {
-		static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+	template<typename T, typename output_iter>
+	std::ptrdiff_t pixelOffset(const glm::tvec2<T>& p0, const glm::tvec2<T>& p1, const glm::tvec2<T>& p2, const glm::tvec2<T>& p3, T delta, output_iter output) {
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::pixelOffset requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::pixelOffset requires an output iterator as its last argument!");
 		using vec_t = glm::vec<2, T>;
-		static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::pixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 4> points{p0, p1, p2, p3};
-		return intern::simplePixelOffset(points, -delta, output);
+		return intern::simplePixelOffset(points, delta, output);
 	}
 	
 	// Offset a cubic bezier curve, using taper values
-	template<typename T, typename Iter>
-	std::ptrdiff_t taperedPixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, glm::vec<4, T> taper, Iter output) {
-		static_assert(ez::is_output_iterator_v<Iter>, "The iterator passed in is not a proper output iterator!");
+	template<typename T, typename output_iter>
+	std::ptrdiff_t taperedPixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, const std::array<T, 4>& taper, output_iter output) {
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::taperedPixelOffset requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::taperedPixelOffset requires an output iterator as its last argument!");
 		using vec_t = glm::vec<2, T>;
-		static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::taperedPixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 4> points{ p0, p1, p2, p3 };
-		std::array<T, 4> tapers{-taper[0], -taper[1], -taper[2], -taper[3]};
-		return intern::simpleTaperedPixelOffset(points, tapers, output);
+		return intern::simpleTaperedPixelOffset(points, taper, output);
 	}
 
 }; // End namespace ez

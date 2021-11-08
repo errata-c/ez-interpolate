@@ -11,7 +11,7 @@
 
 class Offset : public Engine {
 public:
-	glm::vec4 taperValues;
+	std::array<float, 4> taperValues;
 	float offsetValue;
 
 	std::ptrdiff_t index;
@@ -78,7 +78,6 @@ public:
 		ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, 0.f, 128.f, "%.0f", 1.f);
 		ImGui::RadioButton("Normal", &mode, 2);
 		ImGui::DragFloat("Offset", &offsetValue, 1.f, 0.f, 128.f, "%.0f", 1.f);
-		
 
 		ImGui::End();
 	}
@@ -106,18 +105,25 @@ public:
 		offset.clear();
 		std::ptrdiff_t count = 0;
 		if (mode == 1) {
-			count = ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], taperValues, std::back_inserter(offset));
+			std::array<float, 4> tmp{
+				-taperValues[0],
+				-taperValues[1],
+				-taperValues[2],
+				-taperValues[3]
+			};
+			
+			count = ez::bezier::taperedPixelOffset(curve[0], curve[1], curve[2], curve[3], tmp, std::back_inserter(offset));
 		}
 		else {
-			count = ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], offsetValue, std::back_inserter(offset));
+			count = ez::bezier::pixelOffset(curve[0], curve[1], curve[2], curve[3], -offsetValue, std::back_inserter(offset));
 		}
 		assert(count == offset.size());
 
 		if (offset.size() > 0) {
 			beginPath();
-			for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(offset.size()); i += 4) {
-				moveTo(offset[i]);
-				pathTo(offset[i + 1], offset[i + 2], offset[i + 3]);
+			moveTo(offset[0]);
+			for (std::ptrdiff_t i = 1; i < std::ptrdiff_t(offset.size()); i += 3) {
+				pathTo(offset[i], offset[i + 1], offset[i + 2]);
 			}
 			stroke();
 		}
@@ -133,7 +139,6 @@ public:
 			circle(curve[i], 10.f);
 			fill();
 		}
-
 		
 		for (std::size_t i = 0; i < offset.size(); ++i) {
 			std::size_t mod = i % 4;
@@ -151,8 +156,6 @@ public:
 		circle(offset.back(), 4.f);
 		fill();
 	}
-
-	
 };
 
 int main() {

@@ -213,7 +213,9 @@ namespace ez {
 			*output++ = interpolate(p0, p1, t);
 			*output++ = p1;
 		}
-
+	
+		// Returns the quadratic segment between 't0' and 't1'
+		// t1 must be greater than t0
 		template<typename vec_t, typename U, typename  Iter>
 		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t0, U t1, Iter output) {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
@@ -222,13 +224,22 @@ namespace ez {
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert(t0 < t1);
+			assert(t0 <= t1);
 
-			t0 = t0 / t1;
+			// Avoid divide by zero
+			if (std::abs(t1 - t0) > ez::epsilon<T>()) {
+				t0 = t0 / t1;
 
-			std::array<vec_t, 3> tmp;
-			leftSplit(p0, p1, p2, t1, tmp.begin());
-			rightSplit(tmp[0], tmp[1], tmp[2], t0, output);
+				std::array<vec_t, 3> tmp;
+				leftSplit(p0, p1, p2, t1, tmp.begin());
+				rightSplit(tmp[0], tmp[1], tmp[2], t0, output);
+			}
+			else {
+				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
+				for (int i = 0; i < 4; ++i) {
+					*output++ = tmp;
+				}
+			}
 		};
 
 		template<typename vec_t, typename U, typename  Iter>
@@ -239,13 +250,22 @@ namespace ez {
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert(t0 < t1);
+			assert(t0 <= t1);
 
-			t0 = t0 / t1;
+			// Avoid divide by zero
+			if(std::abs(t1 - t0) > ez::epsilon<T>()) {
+				t0 = t0 / t1;
 
-			std::array<vec_t, 4> tmp;
-			leftSplit(p0, p1, p2, p3, t1, tmp.begin());
-			rightSplit(tmp[0], tmp[1], tmp[2], tmp[3], t0, output);
+				std::array<vec_t, 4> tmp;
+				leftSplit(p0, p1, p2, p3, t1, tmp.begin());
+				rightSplit(tmp[0], tmp[1], tmp[2], tmp[3], t0, output);
+			}
+			else {
+				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
+				for (int i = 0; i < 4; ++i) {
+					*output++ = tmp;
+				}
+			}
 		};
 
 		// The expanders take iterators and expand them into arguments for the above functions

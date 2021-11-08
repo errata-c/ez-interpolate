@@ -10,14 +10,17 @@
 
 class Split : public Engine {
 public:
-	float splitPoint;
+	float sp0, sp1;
+	int state;
 	std::ptrdiff_t index;
 	std::array<glm::vec2, 4> curve, left, right;
 
 	Split()
 		: Engine("Bezier Offsets")
 		, index(-1)
-		, splitPoint(0.5f)
+		, sp0(0.5f)
+		, sp1(0.75f)
+		, state(0)
 	{
 		curve[0] = glm::vec2(100, 500);
 		curve[1] = glm::vec2(100, 100);
@@ -60,10 +63,21 @@ public:
 
 	void gui() override {
 		if(ImGui::Begin("Edit")) {
-			//ImGui::RadioButton("Taper", &mode, 1);
-			//ImGui::RadioButton("Normal", &mode, 2);
+			ImGui::RadioButton("Single Split", &state, 0);
+			if (ImGui::RadioButton("Segment Split", &state, 1)) {
+				sp1 = std::max(sp0, sp1);
+			}
 
-			ImGui::DragFloat("Split Point", &splitPoint, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+			if (state == 0) {
+				ImGui::DragFloat("Split Point", &sp0, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+			}
+			else {
+				ImGui::DragFloat("Split Point 0", &sp0, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+				ImGui::DragFloat("Split Point 1", &sp1, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+				if (sp0 > sp1) {
+					std::swap(sp0, sp1);
+				}
+			}
 		}
 		ImGui::End();
 	}
@@ -71,20 +85,51 @@ public:
 	void render() override {
 		strokeWidth(3);
 
-		ez::bezier::leftSplit(curve[0], curve[1], curve[2], curve[3], splitPoint, left.begin());
-		ez::bezier::rightSplit(curve[0], curve[1], curve[2], curve[3], splitPoint, right.begin());
+		if (state == 0) {
+			std::array<glm::vec2, 7> gen;
+			ez::bezier::split(curve[0], curve[1], curve[2], curve[3], sp0, gen.begin());
+			//ez::bezier::leftSplit(curve[0], curve[1], curve[2], curve[3], sp0, left.begin());
+			//ez::bezier::rightSplit(curve[0], curve[1], curve[2], curve[3], sp0, right.begin());
 
-		strokeColor(0.8, 0., 0);
-		beginPath();
-		moveTo(left[0]);
-		pathTo(left[1], left[2], left[3]);
-		stroke();
+			strokeColor(0.8, 0., 0);
+			beginPath();
+			moveTo(gen[0]);
+			pathTo(gen[1], gen[2], gen[3]);
+			stroke();
 
-		strokeColor(0, 0.1, 0.8);
-		beginPath();
-		moveTo(right[0]);
-		pathTo(right[1], right[2], right[3]);
-		stroke();
+			strokeColor(0, 0.1, 0.8);
+			beginPath();
+			moveTo(gen[3]);
+			pathTo(gen[4], gen[5], gen[6]);
+			stroke();
+
+			fillColor(0, 1, 0);
+			beginPath();
+			circle(gen[3], 5.f);
+			fill();
+		}
+		else {
+			std::array<glm::vec2, 4> gen;
+			ez::bezier::segment(curve[0], curve[1], curve[2], curve[3], sp0, sp1, gen.begin());
+
+			strokeColor(0.8, 0., 0);
+			beginPath();
+			moveTo(gen[0]);
+			pathTo(gen[1], gen[2], gen[3]);
+			stroke();
+
+			glm::vec2 leftPoint = ez::bezier::interpolateStatic<4>(curve.begin(), sp0);
+			glm::vec2 rightPoint = ez::bezier::interpolateStatic<4>(curve.begin(), sp1);
+
+			fillColor(0, 1, 0);
+			beginPath();
+			circle(leftPoint, 5.f);
+			fill();
+
+			beginPath();
+			circle(rightPoint, 5.f);
+			fill();
+		}
 
 		for (int i = 0; i < 4; ++i) {
 			if (i == index) {
