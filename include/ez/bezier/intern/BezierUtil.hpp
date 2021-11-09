@@ -141,24 +141,27 @@ namespace ez::bezier {
 		static_assert(ez::is_iterator_writable_v<output_iter, T>, "ez::bezier::findExtrema requires that the output iterator accept floating point values!");
 
 		std::array<vec_t, 3> coeff;
-		coefficients(p0, p1, p2, &coeff[0]);
+		bezier::coefficients(p0, p1, p2, &coeff[0]);
 
 		coeff[0] *= T(2);
 
 		int count = 0;
-		std::array<T, 2 * Dim> roots;
+		std::array<T, Dim> roots;
 		for (int i = 0; i < Dim; ++i) {
-			count += ez::poly::solveLinear((&coeff[0])[i], (&coeff[1])[i], (&roots[0]) + count);
+			count += ez::poly::solveLinear(
+				ez::value_ptr(coeff[0])[i],
+				ez::value_ptr(coeff[1])[i],
+				&roots[count]);
 		}
+		auto nend = std::remove_if(roots.begin(), roots.begin() + count, [](T val) {
+			return val < T(0) || T(1) < val;
+		});
+		count = nend - roots.begin();
 
-		int valid = 0;
 		for (int i = 0; i < count; ++i) {
-			if (T(0) <= roots[i] && roots[i] <= T(1)) {
-				*output++ = roots[i];
-				++valid;
-			}
+			*output++ = roots[i];
 		}
-		return valid;
+		return count;
 	}
 
 	template<typename vec_t, typename output_iter>
@@ -171,7 +174,7 @@ namespace ez::bezier {
 		static_assert(ez::is_iterator_writable_v<output_iter, T>, "ez::bezier::findExtrema requires that the output iterator accept floating point values!");
 
 		std::array<vec_t, 4> coeff;
-		coefficients(p0, p1, p2, p3, &coeff[0]);
+		bezier::coefficients(p0, p1, p2, p3, &coeff[0]);
 
 		coeff[0] *= T(3);
 		coeff[1] *= T(2);
@@ -179,17 +182,21 @@ namespace ez::bezier {
 		int count = 0;
 		std::array<T, 2 * Dim> roots;
 		for (int i = 0; i < Dim; ++i) {
-			count += ez::poly::solveQuadratic((&coeff[0])[i], (&coeff[1])[i], (&coeff[2])[i], (&roots[0]) + count);
+			count += ez::poly::solveQuadratic(
+				ez::value_ptr(coeff[0])[i], 
+				ez::value_ptr(coeff[1])[i],
+				ez::value_ptr(coeff[2])[i],
+				&roots[count]);
 		}
+		auto nend = std::remove_if(roots.begin(), roots.begin() + count, [](T val) {
+			return val < T(0) || T(1) < val;
+		});
+		count = nend - roots.begin();
 
-		int valid = 0;
 		for (int i = 0; i < count; ++i) {
-			if (T(0) <= roots[i] && roots[i] <= T(1)) {
-				*output++ = roots[i];
-				++valid;
-			}
+			*output++ = roots[i];
 		}
-		return valid;
+		return count;
 	}
 
 	// Function for finding the cusp on a cubic curve, if it exists.

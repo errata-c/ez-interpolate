@@ -204,15 +204,47 @@ namespace ez::bezier {
 
 		std::array<glm::tvec2<T>, 4> points{ p0, p1, p2, p3 };
 
+		std::ptrdiff_t count = 0;
 		{ // Write the first point of the offset
 			vec_t startNorm = bezier::normalAtStatic<4>(points.begin(), T(0));
 			vec_t startPoint = points[0] + startNorm * taper[0];
 			*output++ = startPoint;
+			++count;
 		}
 
-		// Calculate the derivative, 
+		// find the extrema, split at those points, run taper offset for each segment
+		int numroots = 0;
+		std::array<T, 6> roots;
+		numroots = bezier::findExtrema(p0, p1, p2, p3, &roots[0]);
+		roots[numroots] = T(0);
+		++numroots;
+		roots[numroots] = T(1);
+		++numroots;
 
-		return intern::simpleTaperedPixelOffset(points, taper, T(0.5), output) + 1;
+		// Selection sort
+		for (int i = 0; i < numroots-1; ++i) {
+			int selMin = i;
+			for (int j = i + 1; j < numroots; ++j) {
+				if (roots[j] < roots[selMin]) {
+					selMin = j;
+				}
+			}
+			if (selMin != i) {
+				std::swap(roots[i], roots[selMin]);
+			}
+		}
+
+		// Split each subrange defined by the roots array
+		for (int i = 0; i < numroots - 1; ++i) {
+			std::array<vec_t, 4> seg;
+			std::array<T, 4> tap;
+			bezier::segmentStatic<4>(points.data(), roots[i], roots[i + 1], &seg[0]);
+			bezier::segmentStatic<4>(taper.data(), roots[i], roots[i + 1], &tap[0]);
+
+			count += intern::simpleTaperedPixelOffset(seg, tap, T(0.5), output);
+		}
+
+		return count;
 	}
 
 }; // End namespace ez

@@ -141,8 +141,8 @@ public:
 		}
 		
 		for (std::size_t i = 0; i < offset.size(); ++i) {
-			std::size_t mod = i % 4;
-			if (mod == 0 || mod == 3) {
+			std::size_t mod = i % 3;
+			if (mod == 0) {
 				fillColor(0.4, 1.0, 0.4);
 			}
 			else {
