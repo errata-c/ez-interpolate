@@ -19,9 +19,6 @@ namespace ez {
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			// Is this necessary? Is splitting out of range actually a bad thing?
-			assert((t + ez::epsilon<T>()) > 0.0 && (t - ez::epsilon<T>()) < 1.0);
-
 			*output++ = p0;
 			*output++ = interpolate(p0, p1, t);
 		}
@@ -34,8 +31,6 @@ namespace ez {
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::rightSplit requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
-
-			assert((t + ez::epsilon<T>()) > 0.0 && (t - ez::epsilon<T>()) < 1.0);
 			
 			*output++ = interpolate(p0, p1, t);
 			*output++ = p1;
@@ -49,9 +44,6 @@ namespace ez {
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
-
-			// Is this necessary? Is splitting out of range actually a bad thing?
-			assert((t + ez::epsilon<T>()) > 0.0 && (t - ez::epsilon<T>()) < 1.0);
 
 			vec_t lp = interpolate(p0, p1, t);
 			vec_t rp = interpolate(p1, p2, t);
@@ -72,8 +64,6 @@ namespace ez {
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert((t + ez::epsilon<T>()) > 0.0 && (t - ez::epsilon<T>()) < 1.0);
-
 			vec_t lp = interpolate(p0, p1, t);
 			vec_t rp = interpolate(p1, p2, t);
 
@@ -92,8 +82,6 @@ namespace ez {
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::leftSplit requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::leftSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
-
-			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
 
 			std::array<vec_t, 3> d2{
 				interpolate(p0, p1, T(t)),
@@ -123,8 +111,6 @@ namespace ez {
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::rightSplit cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
 
-			assert((t + ez::epsilon<U>()) > T(0) && (t - ez::epsilon<U>()) < T(1));
-
 			std::array<vec_t, 3> d2{
 				interpolate(p0, p1, t),
 				interpolate(p1, p2, t),
@@ -152,8 +138,6 @@ namespace ez {
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::split requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::split cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
-
-			assert((t + ez::epsilon<T>()) > T(0) && (t - ez::epsilon<T>()) < T(1));
 
 			std::array<vec_t, 3> d2{
 				interpolate(p0, p1, t),
@@ -214,15 +198,16 @@ namespace ez {
 			*output++ = p1;
 		}
 	
-		// Returns the quadratic segment between 't0' and 't1'
-		// t1 must be greater than t0
+		// Returns the linear segment between 't0' and 't1'
+		// 't1' must be greater than or equal to 't0'
 		template<typename vec_t, typename U, typename  Iter>
-		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t0, U t1, Iter output) {
+		void segment(const vec_t& p0, const vec_t& p1, U t0, U t1, Iter output) {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
 			static_assert(std::is_floating_point_v<U>, "ez::bezier::segment requires floating point types!");
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
+			constexpr std::size_t N = 2;
 
 			assert(t0 <= t1);
 
@@ -230,18 +215,49 @@ namespace ez {
 			if (std::abs(t1 - t0) > ez::epsilon<T>()) {
 				t0 = t0 / t1;
 
-				std::array<vec_t, 3> tmp;
-				leftSplit(p0, p1, p2, t1, tmp.begin());
-				rightSplit(tmp[0], tmp[1], tmp[2], t0, output);
+				std::array<vec_t, N> tmp;
+				leftSplit(p0, p1, tmp.begin());
+				rightSplit(tmp[0], tmp[1], t0, output);
 			}
 			else {
-				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
-				for (int i = 0; i < 4; ++i) {
+				vec_t tmp = bezier::interpolate(p0, p1, t0);
+				for (int i = 0; i < N; ++i) {
 					*output++ = tmp;
 				}
 			}
 		};
 
+		// Returns the quadratic segment between 't0' and 't1'
+		// 't1' must be greater than or equal to 't0'
+		template<typename vec_t, typename U, typename  Iter>
+		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, U t0, U t1, Iter output) {
+			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
+			static_assert(std::is_floating_point_v<U>, "ez::bezier::segment requires floating point types!");
+			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
+			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
+			using T = vec_value_t<vec_t>;
+			constexpr std::size_t N = 3;
+
+			assert(t0 <= t1);
+
+			// Avoid divide by zero
+			if (std::abs(t1 - t0) > ez::epsilon<T>()) {
+				t0 = t0 / t1;
+
+				std::array<vec_t, N> tmp;
+				leftSplit(p0, p1, p2, t1, tmp.begin());
+				rightSplit(tmp[0], tmp[1], tmp[2], t0, output);
+			}
+			else {
+				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
+				for (int i = 0; i < N; ++i) {
+					*output++ = tmp;
+				}
+			}
+		};
+
+		// Returns the cubic segment between 't0' and 't1'
+		// 't1' must be greater than or equal to 't0'
 		template<typename vec_t, typename U, typename  Iter>
 		void segment(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t p3, U t0, U t1, Iter output) {
 			static_assert(ez::is_vec_v<vec_t>, "ez::bezier::segment requires vector types!");
@@ -249,6 +265,7 @@ namespace ez {
 			static_assert(ez::is_output_iterator_v<Iter>, "ez::bezier::segment requires an output iterator!");
 			static_assert(ez::is_iterator_writable_v<Iter, vec_t>, "ez::bezier::segment cannot write values to output iterator, types are incompatible!");
 			using T = vec_value_t<vec_t>;
+			constexpr std::size_t N = 4;
 
 			assert(t0 <= t1);
 
@@ -256,13 +273,13 @@ namespace ez {
 			if(std::abs(t1 - t0) > ez::epsilon<T>()) {
 				t0 = t0 / t1;
 
-				std::array<vec_t, 4> tmp;
+				std::array<vec_t, N> tmp;
 				leftSplit(p0, p1, p2, p3, t1, tmp.begin());
 				rightSplit(tmp[0], tmp[1], tmp[2], tmp[3], t0, output);
 			}
 			else {
-				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
-				for (int i = 0; i < 4; ++i) {
+				vec_t tmp = bezier::interpolate(p0, p1, p2, p3, t0);
+				for (int i = 0; i < N; ++i) {
 					*output++ = tmp;
 				}
 			}
@@ -305,15 +322,33 @@ namespace ez {
 				}
 			};
 
-			template<typename input_iter, typename output_iter>
+			template<typename input_iter, typename T, typename output_iter>
 			struct SplitExpander {
 				input_iter input;
+				T t;
 				output_iter output;
 
 				template<std::size_t N, typename ...Ts>
 				void call(Ts&&... args) {
 					if constexpr (N == 0) {
-						return bezier::rightSplit(std::forward<Ts>(args)..., output);
+						return bezier::split(std::forward<Ts>(args)..., t, output);
+					}
+					else {
+						return call<N - 1>(std::forward<Ts>(args)..., *input++);
+					}
+				}
+			};
+
+			template<typename input_iter, typename T, typename output_iter>
+			struct SegmentExpander {
+				input_iter input;
+				T t0, t1;
+				output_iter output;
+
+				template<std::size_t N, typename ...Ts>
+				void call(Ts&&... args) {
+					if constexpr (N == 0) {
+						return bezier::segment(std::forward<Ts>(args)..., t0, t1, output);
 					}
 					else {
 						return call<N - 1>(std::forward<Ts>(args)..., *input++);
@@ -324,18 +359,23 @@ namespace ez {
 
 		template<std::size_t N, typename input_iter, typename T, typename output_iter>
 		void leftSplitStatic(input_iter input, T t, output_iter output) {
-			static_assert(N <= 4, "ez::bezier::leftSplitStatic currently only allows for N < 5!");
+			static_assert(N >= 2 && N <= 4, "ez::bezier::leftSplitStatic currently only allows for N in range [2, 4]!");
 			intern::LeftSplitExpander<input_iter, T, output_iter>{input, output, t}.call<N>();
 		};
 		template<std::size_t N, typename input_iter, typename T, typename output_iter>
 		void rightSplitStatic(input_iter input, T t, output_iter output) {
-			static_assert(N <= 4, "ez::bezier::rightSplitStatic currently only allows for N < 5!");
+			static_assert(N >= 2 && N <= 4, "ez::bezier::rightSplitStatic currently only allows for N in range [2, 4]!");
 			intern::RightSplitExpander<input_iter, T, output_iter>{input, output, t}.call<N>();
 		};
-		template<std::size_t N, typename input_iter, typename output_iter>
-		void splitStatic(input_iter input, output_iter output) {
-			static_assert(N <= 4, "ez::bezier::splitStatic currently only allows for N < 5!");
-			intern::SplitExpander<input_iter, output_iter>{input, output}.call<N>();
+		template<std::size_t N, typename input_iter, typename T, typename output_iter>
+		void splitStatic(input_iter input, T t, output_iter output) {
+			static_assert(N >= 2 && N <= 4, "ez::bezier::splitStatic currently only allows for N in range [2, 4]!");
+			intern::SplitExpander<input_iter, T, output_iter>{input, output}.call<N>();
+		};
+		template<std::size_t N, typename input_iter, typename T, typename output_iter>
+		void segmentStatic(input_iter input, T t0, T t1, output_iter output) {
+			static_assert(N >= 2 && N <= 4, "ez::bezier::segmentStatic currently only allows for N in range [2, 4]!");
+			intern::SegmentExpander<input_iter, T, output_iter>{input, t0, t1, output}.call<N>();
 		};
 	};
 }

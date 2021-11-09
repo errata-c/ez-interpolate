@@ -69,11 +69,11 @@ public:
 			}
 
 			if (state == 0) {
-				ImGui::DragFloat("Split Point", &sp0, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+				ImGui::DragFloat("Split Point", &sp0, 0.005f, -0.2f, 1.2f, "%.3f", 1.f);
 			}
 			else {
-				ImGui::DragFloat("Split Point 0", &sp0, 0.005f, 0.f, 1.f, "%.3f", 1.f);
-				ImGui::DragFloat("Split Point 1", &sp1, 0.005f, 0.f, 1.f, "%.3f", 1.f);
+				ImGui::DragFloat("Split Point 0", &sp0, 0.005f, -0.2f, 1.2f, "%.3f", 1.f);
+				ImGui::DragFloat("Split Point 1", &sp1, 0.005f, -0.2f, 1.2f, "%.3f", 1.f);
 				if (sp0 > sp1) {
 					std::swap(sp0, sp1);
 				}

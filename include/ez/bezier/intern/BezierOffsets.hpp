@@ -5,13 +5,14 @@
 #include "BezierFitting.hpp"
 #include "BezierUtil.hpp"
 
+// The simple offset functions don't push the first point, to allow for chaining multiple calls together
+
 namespace ez::bezier {
 	namespace intern {
 		// Offset for quadratic or cubic curves
 		// 'simple' means it does no checks for degenerate curves or other exceptional circumstances.
 		template<std::size_t N, typename T, typename output_iter>
-		std::ptrdiff_t simplePixelOffset(const std::array<glm::tvec2<T>, N> & points, T delta, output_iter output) {
-			static constexpr T threshold = T(0.921);
+		std::ptrdiff_t simplePixelOffset(const std::array<glm::tvec2<T>, N> & points, T delta, T threshold, output_iter output) {
 			using vec_t = glm::tvec2<T>;
 
 			// The number of points written.
@@ -24,12 +25,7 @@ namespace ez::bezier {
 			T range = T(1);
 			T start = T(0);
 
-			{ // Write the first point of the offset
-				vec_t startNorm = bezier::normalAtStatic<N>(base.begin(), T(0));
-				vec_t startPoint = base[0] + startNorm * delta;
-				*output++ = startPoint;
-				count++;
-			}
+
 
 			while (start < range) {
 				for (int i = 0; i < N; ++i) {
@@ -74,8 +70,7 @@ namespace ez::bezier {
 
 		// Tapered offset for cubic 
 		template<std::size_t N, std::size_t M, typename T, typename output_iter>
-		std::ptrdiff_t simpleTaperedPixelOffset(const std::array<glm::tvec2<T>, N> & points, const std::array<T, M>& tapers, output_iter output) {
-			static constexpr T threshold = T(0.921);
+		std::ptrdiff_t simpleTaperedPixelOffset(const std::array<glm::tvec2<T>, N> & points, const std::array<T, M>& tapers, T threshold, output_iter output) {
 			using vec_t = glm::tvec2<T>;
 
 			// The number of points written.
@@ -87,13 +82,6 @@ namespace ez::bezier {
 			T range = T(1);
 			T start = T(0);
 
-			{ // Write the first point of the offset
-				vec_t startNorm = bezier::normalAtStatic<N>(base.begin(), T(0));
-				vec_t startPoint = base[0] + startNorm * tapers[0];
-				*output++ = startPoint;
-				count++;
-			}
-
 			while (start < range) {
 				for (int i = 0; i < N; ++i) {
 					T interp = T(i) / T(N - 1);
@@ -101,11 +89,21 @@ namespace ez::bezier {
 					offset[i] = base[i] + n[i] * bezier::interpolateStatic<M>(tbase.begin(), interp);
 				}
 
-				vec_t bp = bezier::interpolateStatic<N>(base.begin(), T(0.5));
-				vec_t op = bezier::interpolateStatic<N>(offset.begin(), T(0.5));
-				T compare = std::abs(bezier::interpolateStatic<M>(tbase.begin(), T(0.5)));
+				std::array<vec_t, 2> bp{ {
+					bezier::interpolateStatic<N>(base.begin(), T(1) / T(3)),
+					bezier::interpolateStatic<N>(base.begin(), T(2) / T(3))
+				} };
+				std::array<vec_t, 2> op{ {
+					bezier::interpolateStatic<N>(offset.begin(), T(1) / T(3)),
+					bezier::interpolateStatic<N>(offset.begin(), T(2) / T(3))
+				} };
+				std::array<T, 2> cmp{ {
+					std::abs(bezier::interpolateStatic<M>(tbase.begin(), T(1) / T(3))),
+					std::abs(bezier::interpolateStatic<M>(tbase.begin(), T(2) / T(3)))
+				} };
 
-				if (std::abs(glm::length(op - bp) - compare) > threshold) {
+				if (std::abs(glm::length(op[0] - bp[0]) - cmp[0]) > threshold &&
+					std::abs(glm::length(op[1] - bp[1]) - cmp[1]) > threshold) {
 					// Subdivide
 					range = (start + range) * T(0.5);
 					bezier::leftSplitStatic<N>(base.begin(), T(0.5), base.begin());
@@ -148,7 +146,14 @@ namespace ez::bezier {
 		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::pixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 3> points{ p0, p1, p2 };
-		return intern::simplePixelOffset(points, delta, output);
+
+		{ // Write the first point of the offset
+			vec_t startNorm = bezier::normalAtStatic<3>(points.begin(), T(0));
+			vec_t startPoint = points[0] + startNorm * delta;
+			*output++ = startPoint;
+		}
+
+		return intern::simplePixelOffset(points, delta, T(0.5), output) + 1;
 	}
 
 	// Offset a cubic bezier curve, assuming that all coordinates are in pixel scale (essentially integer precision).
@@ -160,9 +165,35 @@ namespace ez::bezier {
 		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::pixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 4> points{p0, p1, p2, p3};
-		return intern::simplePixelOffset(points, delta, output);
+
+		{ // Write the first point of the offset
+			vec_t startNorm = bezier::normalAtStatic<4>(points.begin(), T(0));
+			vec_t startPoint = points[0] + startNorm * delta;
+			*output++ = startPoint;
+		}
+
+		return intern::simplePixelOffset(points, delta, T(0.5), output) + 1;
 	}
 	
+	// Offset a quadratic bezier curve, using taper values
+	template<typename T, typename output_iter>
+	std::ptrdiff_t taperedPixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const std::array<T, 3>& taper, output_iter output) {
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::taperedPixelOffset requires floating point value types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "ez::bezier::taperedPixelOffset requires an output iterator as its last argument!");
+		using vec_t = glm::vec<2, T>;
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::taperedPixelOffset requires the output iterator to accept vec2 values!");
+
+		std::array<glm::tvec2<T>, 3> points{ p0, p1, p2 };
+
+		{ // Write the first point of the offset
+			vec_t startNorm = bezier::normalAtStatic<3>(points.begin(), T(0));
+			vec_t startPoint = points[0] + startNorm * taper[0];
+			*output++ = startPoint;
+		}
+
+		return intern::simpleTaperedPixelOffset(points, taper, T(0.5), output) + 1;
+	}
+
 	// Offset a cubic bezier curve, using taper values
 	template<typename T, typename output_iter>
 	std::ptrdiff_t taperedPixelOffset(const glm::vec<2, T>& p0, const glm::vec<2, T>& p1, const glm::vec<2, T>& p2, const glm::vec<2, T>& p3, const std::array<T, 4>& taper, output_iter output) {
@@ -172,7 +203,16 @@ namespace ez::bezier {
 		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "ez::bezier::taperedPixelOffset requires the output iterator to accept vec2 values!");
 
 		std::array<glm::tvec2<T>, 4> points{ p0, p1, p2, p3 };
-		return intern::simpleTaperedPixelOffset(points, taper, output);
+
+		{ // Write the first point of the offset
+			vec_t startNorm = bezier::normalAtStatic<4>(points.begin(), T(0));
+			vec_t startPoint = points[0] + startNorm * taper[0];
+			*output++ = startPoint;
+		}
+
+		// Calculate the derivative, 
+
+		return intern::simpleTaperedPixelOffset(points, taper, T(0.5), output) + 1;
 	}
 
 }; // End namespace ez

@@ -47,10 +47,44 @@ namespace ez::bezier {
 		static_assert(ez::is_output_iterator_v<output_iter>, "The iterator passed in is not a proper output iterator!");
 		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
 
-		*output++ = -p0 + T(3) * p1 + T(3) * p2 + p3;
-		*output++ = T(3) * p0 + T(6) * p1 + T(-6) * p2;
-		*output++ = T(-3) * p0 + T(3) * p1 + T(-3) * p2;
+		*output++ = -p0 + T(3) * p1 - T(3) * p2 + p3;
+		*output++ = T(3) * p0 - T(6) * p1 + T(3) * p2;
+		*output++ = T(-3) * p0 + T(3) * p1;
 		*output++ = p0;
+	}
+
+	template<typename vec_t, typename output_iter>
+	void derivativeCoefficients(const vec_t& p0, const vec_t& p1, output_iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::coefficients requires a glm vec type!");
+		using T = ez::vec_value_t<vec_t>;
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::coefficients requires floating point types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "The iterator passed in is not a proper output iterator!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+		*output++ = -p0 + p1;
+	}
+	template<typename vec_t, typename output_iter>
+	void derivativeCoefficients(const vec_t& p0, const vec_t& p1, const vec_t& p2, output_iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::coefficients requires a glm vec type!");
+		using T = ez::vec_value_t<vec_t>;
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::coefficients requires floating point types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "The iterator passed in is not a proper output iterator!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+		*output++ = T(2) * (p0 + T(-2) * p1 + p2);
+		*output++ = (T(-2) * p0 + T(2) * p1);
+	}
+	template<typename vec_t, typename output_iter>
+	void derivativeCoefficients(const vec_t& p0, const vec_t& p1, const vec_t& p2, const vec_t& p3, output_iter output) {
+		static_assert(ez::is_vec_v<vec_t>, "ez::bezier::coefficients requires a glm vec type!");
+		using T = ez::vec_value_t<vec_t>;
+		static_assert(std::is_floating_point_v<T>, "ez::bezier::coefficients requires floating point types!");
+		static_assert(ez::is_output_iterator_v<output_iter>, "The iterator passed in is not a proper output iterator!");
+		static_assert(ez::is_iterator_writable_v<output_iter, vec_t>, "Cannot convert from vector type to iterator value_type!");
+
+		*output++ = T(3) *(-p0 + T(3) * p1 - T(3) * p2 + p3);
+		*output++ = T(2) * (T(3) * p0 - T(6) * p1 + T(3) * p2);
+		*output++ = T(-3) * p0 + T(3) * p1;
 	}
 
 	namespace intern {
@@ -69,11 +103,33 @@ namespace ez::bezier {
 				}
 			}
 		};
+
+		template<typename input_iter, typename output_iter>
+		struct DerivativesCoefficientsExpander {
+			input_iter input;
+			output_iter output;
+
+			template<std::size_t N, typename ... Ts>
+			void call(Ts&&... args) {
+				if constexpr (N == 0) {
+					derivativeCoefficients(std::forward<Ts>(args)..., output);
+				}
+				else {
+					call<N - 1>(std::forward<Ts>(args)..., *input++);
+				}
+			}
+		};
 	}
+
 	template<std::size_t N, typename input_iter, typename output_iter>
 	void coefficientsStatic(input_iter input, output_iter output) {
 		intern::CoefficientsExpander<input_iter, output_iter>{input, output}.call<N>();
 	}
+	template<std::size_t N, typename input_iter, typename output_iter>
+	void derivativeCoefficientsStatic(input_iter input, output_iter output) {
+		intern::DerivativeCoefficientsExpander<N, input_iter, output_iter>{input, output}.call<N>();
+	}
+
 
 	template<typename vec_t, typename output_iter>
 	int findExtrema(const vec_t& p0, const vec_t& p1, const vec_t & p2, output_iter output) {

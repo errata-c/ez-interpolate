@@ -75,9 +75,9 @@ public:
 		ImGui::Begin("Edit");
 
 		ImGui::RadioButton("Taper", &mode, 1);
-		ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, 0.f, 128.f, "%.0f", 1.f);
+		ImGui::DragFloat4("Tapers", &taperValues[0], 1.f, -128.f, 128.f, "%.0f", 1.f);
 		ImGui::RadioButton("Normal", &mode, 2);
-		ImGui::DragFloat("Offset", &offsetValue, 1.f, 0.f, 128.f, "%.0f", 1.f);
+		ImGui::DragFloat("Offset", &offsetValue, 1.f, -128.f, 128.f, "%.0f", 1.f);
 
 		ImGui::End();
 	}
