@@ -233,6 +233,17 @@ namespace ez::bezier {
 				std::swap(roots[i], roots[selMin]);
 			}
 		}
+		// Merge invalid ranges
+		{
+			int j = 0;
+			for (int i = 1; i < numroots; ++i) {
+				if (std::abs(roots[i] - roots[j]) > ez::epsilon<T>() * T(10)) {
+					++j;
+				}
+				roots[j] = roots[i];
+			}
+			numroots = j + 1;
+		}
 
 		// Split each subrange defined by the roots array
 		for (int i = 0; i < numroots - 1; ++i) {
