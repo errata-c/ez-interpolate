@@ -209,10 +209,11 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			constexpr std::size_t N = 2;
 
-			assert(t0 <= t1);
+			// Precision drops when the epsilon is too low and t1 is close to zero
+			constexpr T eps = ez::epsilon<T>() * T(10);
 
 			// Avoid divide by zero
-			if (std::abs(t1 - t0) > ez::epsilon<T>()) {
+			if (std::abs(t1) > eps) {
 				t0 = t0 / t1;
 
 				std::array<vec_t, N> tmp;
@@ -220,10 +221,7 @@ namespace ez {
 				rightSplit(tmp[0], tmp[1], t0, output);
 			}
 			else {
-				vec_t tmp = bezier::interpolate(p0, p1, t0);
-				for (int i = 0; i < N; ++i) {
-					*output++ = tmp;
-				}
+				leftSplit(p0, p1, t0, output);
 			}
 		};
 
@@ -238,10 +236,11 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			constexpr std::size_t N = 3;
 
-			assert(t0 <= t1);
+			// Precision drops when the epsilon is too low and t1 is close to zero
+			constexpr T eps = ez::epsilon<T>() * T(10);
 
 			// Avoid divide by zero
-			if (std::abs(t1 - t0) > ez::epsilon<T>()) {
+			if (std::abs(t1) > eps) {
 				t0 = t0 / t1;
 
 				std::array<vec_t, N> tmp;
@@ -249,10 +248,7 @@ namespace ez {
 				rightSplit(tmp[0], tmp[1], tmp[2], t0, output);
 			}
 			else {
-				vec_t tmp = bezier::interpolate(p0, p1, p2, t0);
-				for (int i = 0; i < N; ++i) {
-					*output++ = tmp;
-				}
+				leftSplit(p0, p1, p2, t0, output);
 			}
 		};
 
@@ -267,10 +263,11 @@ namespace ez {
 			using T = vec_value_t<vec_t>;
 			constexpr std::size_t N = 4;
 
-			assert(t0 <= t1);
+			// Precision drops when the epsilon is too low and t1 is close to zero
+			constexpr T eps = ez::epsilon<T>() * T(10);
 
 			// Avoid divide by zero
-			if(std::abs(t1 - t0) > ez::epsilon<T>()) {
+			if(std::abs(t1) > eps) {
 				t0 = t0 / t1;
 
 				std::array<vec_t, N> tmp;
@@ -278,10 +275,7 @@ namespace ez {
 				rightSplit(tmp[0], tmp[1], tmp[2], tmp[3], t0, output);
 			}
 			else {
-				vec_t tmp = bezier::interpolate(p0, p1, p2, p3, t0);
-				for (int i = 0; i < N; ++i) {
-					*output++ = tmp;
-				}
+				leftSplit(p0, p1, p2, p3, t0, output);
 			}
 		};
 

@@ -65,7 +65,7 @@ public:
 		if(ImGui::Begin("Edit")) {
 			ImGui::RadioButton("Single Split", &state, 0);
 			if (ImGui::RadioButton("Segment Split", &state, 1)) {
-				sp1 = std::max(sp0, sp1);
+				//sp1 = std::max(sp0, sp1);
 			}
 
 			if (state == 0) {
@@ -75,7 +75,7 @@ public:
 				ImGui::DragFloat("Split Point 0", &sp0, 0.005f, -0.2f, 1.2f, "%.3f", 1.f);
 				ImGui::DragFloat("Split Point 1", &sp1, 0.005f, -0.2f, 1.2f, "%.3f", 1.f);
 				if (sp0 > sp1) {
-					std::swap(sp0, sp1);
+					//std::swap(sp0, sp1);
 				}
 			}
 		}
