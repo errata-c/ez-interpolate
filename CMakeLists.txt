@@ -20,6 +20,7 @@ cmake_dependent_option(EZ_INTERPOLATE_BUILD_GUI_TESTS "Build the gui based test 
 set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
 
 find_package(ez-math CONFIG REQUIRED)
+find_package(ez-geo CONFIG REQUIRED)
 
 add_library(interpolate INTERFACE)
 target_include_directories(interpolate INTERFACE 
@@ -28,6 +29,7 @@ target_include_directories(interpolate INTERFACE
 )
 target_link_libraries(interpolate INTERFACE 
 	ez::math
+	ez::geo
 )
 target_compile_features(interpolate INTERFACE cxx_std_17)
 

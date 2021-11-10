@@ -7,6 +7,10 @@ if(NOT TARGET ez::math)
 	find_dependency(ez-math CONFIG)
 endif()
 
+if(NOT TARGET ez::geo)
+	find_dependency(ez-geo CONFIG)
+endif()
+
 if(NOT TARGET ez::meta)
 	find_dependency(ez-meta CONFIG)
 endif()

@@ -1,6 +1,8 @@
 #pragma once
 #include <ez/meta.hpp>
 #include <ez/math/poly.hpp>
+#include <ez/geo/AABB.hpp>
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -296,4 +298,57 @@ namespace ez::bezier {
 		return false;
 	};
 	*/
+
+	// Find the bounds of a line segment
+	template<typename T, glm::length_t N>
+	AABB<T, N> findBounds(const glm::vec<N, T> & p0, const glm::vec<N, T>& p1) {
+		return AABB<T, N>::Between(p0, p1);
+	}
+
+	// Find the bounds of a quadratic bezier
+	template<typename T, glm::length_t N>
+	AABB<T, N> findBounds(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T> & p2) {
+		AABB<T,N> result = AABB<T, N>::Between(p0, p2);
+		std::array<T, N> extrema;
+		int count = findExtrema(p0, p1, p2, extrema.begin());
+		for (int i = 0; i < count; ++i) {
+			result.merge(bezier::interpolate(p0, p1, p2, extrema[i]));
+		}
+		return result;
+	}
+
+	// Find the bounds of a cubic bezier
+	template<typename T, glm::length_t N>
+	AABB<T, N> findBounds(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T>& p2, const glm::vec<N, T>& p3) {
+		AABB<T, N> result = AABB<T, N>::Between(p0, p3);
+		std::array<T, 2 * N> extrema;
+		int count = findExtrema(p0, p1, p2, p3, extrema.begin());
+		for (int i = 0; i < count; ++i) {
+			result.merge(bezier::interpolate(p0, p1, p2, p3, extrema[i]));
+		}
+		return result;
+	}
+
+	// Find the bounds of the control points of a line segment
+	template<typename T, glm::length_t N>
+	AABB<T, N> findControlBounds(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1) {
+		return AABB<T, N>::Between(p0, p1);
+	}
+
+	// Find the bounds of the control points of a quadratic curve
+	template<typename T, glm::length_t N>
+	AABB<T, N> findControlBounds(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T>& p2) {
+		AABB<T, N> result = AABB<T, N>::Between(p0, p2);
+		result.merge(p1);
+		return result;
+	}
+
+	// Find the bounds of the control points of a quadratic curve
+	template<typename T, glm::length_t N>
+	AABB<T, N> findControlBounds(const glm::vec<N, T>& p0, const glm::vec<N, T>& p1, const glm::vec<N, T>& p2, const glm::vec<N, T>& p3) {
+		AABB<T, N> result = AABB<T, N>::Between(p0, p3);
+		result.merge(p1);
+		result.merge(p2);
+		return result;
+	}
 };
