@@ -1,17 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(EZ_INTERPOLATE
-	VERSION 0.3.0
+	VERSION 0.3.1
 	LANGUAGES C CXX
 )
 
-include(FetchContent)
-FetchContent_Declare(
-	ez-cmake
-	GIT_REPOSITORY "https://github.com/errata-c/ez-cmake.git"
-	GIT_TAG "main"
-)
-FetchContent_MakeAvailable(ez-cmake)
+get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
+
+if(NOT IS_SUBDIRECTORY)
+	include(FetchContent)
+	FetchContent_Declare(
+		ez-cmake
+		GIT_REPOSITORY "https://github.com/errata-c/ez-cmake.git"
+		GIT_TAG "main"
+	)
+	FetchContent_MakeAvailable(ez-cmake)
+endif()
 
 include(CMakeDependentOption)
 
@@ -39,28 +43,30 @@ if(EZ_INTERPOLATE_BUILD_TESTS)
 	add_subdirectory("tests")
 endif()
 
-install(
-	DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-	TYPE INCLUDE
-	FILES_MATCHING
-	PATTERN "*.h" PATTERN "*.hpp"
-)
+if(NOT IS_SUBDIRECTORY)
+	install(
+		DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+		TYPE INCLUDE
+		FILES_MATCHING
+		PATTERN "*.h" PATTERN "*.hpp"
+	)
 
-install(TARGETS interpolate
-	EXPORT ez-interpolate-targets
-	RUNTIME DESTINATION "bin/$<CONFIG>"
-	ARCHIVE DESTINATION "lib/$<CONFIG>"
-	LIBRARY DESTINATION "lib/$<CONFIG>"
-)
+	install(TARGETS interpolate
+		EXPORT ez-interpolate-targets
+		RUNTIME DESTINATION "bin/$<CONFIG>"
+		ARCHIVE DESTINATION "lib/$<CONFIG>"
+		LIBRARY DESTINATION "lib/$<CONFIG>"
+	)
 
-install_package(
-	NAME "ez-interpolate"
-	NAMESPACE "ez::"
-	EXPORT "ez-interpolate-targets"
-	VERSION "${EZ_INTERPOLATE_VERSION}"
-	COMPATIBILITY "SameMajorVersion"
-	DESTINATION "${EZ_INTERPOLATE_CONFIG_DIR}"
-	PRECONFIG "cmake/preconfig.cmake"
+	install_package(
+		NAME "ez-interpolate"
+		NAMESPACE "ez::"
+		EXPORT "ez-interpolate-targets"
+		VERSION "${EZ_INTERPOLATE_VERSION}"
+		COMPATIBILITY "SameMajorVersion"
+		DESTINATION "${EZ_INTERPOLATE_CONFIG_DIR}"
+		PRECONFIG "cmake/preconfig.cmake"
 
-	ARCH_INDEPENDENT
-)
+		ARCH_INDEPENDENT
+	)
+endif()
