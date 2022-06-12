@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -6,6 +6,7 @@
 #include <ez/bezier/Bezier.hpp>
 
 namespace bezier = ez::bezier;
+using Approx = Catch::Approx;
 
 TEST_CASE("bezier linear interpolation") {
 	SECTION("vec1") {

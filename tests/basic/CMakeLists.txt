@@ -5,13 +5,12 @@ find_package(fmt CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 
 add_executable(basic_test 
-	"main.cpp"
 	"interpolate.cpp"
 	"derivative.cpp"
 	"length.cpp"
 )
 target_link_libraries(basic_test PRIVATE 
 	fmt::fmt 
-	Catch2::Catch2
+	Catch2::Catch2WithMain
 	ez::interpolate
 )

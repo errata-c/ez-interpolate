@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -6,6 +6,7 @@
 #include <ez/bezier/Bezier.hpp>
 
 namespace bezier = ez::bezier;
+using Approx = Catch::Approx;
 
 TEST_CASE("Linear derivativeAt") {
 	glm::vec2 p0{-5,-3}, p1{4,10};

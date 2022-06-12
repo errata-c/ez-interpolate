@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -8,6 +8,7 @@
 #include <ez/bezier/Bezier.hpp>
 
 namespace bezier = ez::bezier;
+using Approx = Catch::Approx;
 
 /*
 What kind of guarantees can I provide for the accuracy of these length calculations?
