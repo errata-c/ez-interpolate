@@ -1,30 +1,35 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 
 project(EZ_INTERPOLATE
-	VERSION 0.3.1
+	VERSION 0.3.2
 	LANGUAGES C CXX
 )
 
-get_directory_property(IS_SUBPROJECT PARENT_DIRECTORY)
+include(FetchContent)
+FetchContent_Declare(
+	ez-cmake
+	GIT_REPOSITORY "https://github.com/errata-c/ez-cmake.git"
+	GIT_TAG "main"
+)
+FetchContent_Declare(
+	ez-math
+	GIT_REPOSITORY "https://github.com/errata-c/ez-math.git"
+	GIT_TAG "main"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	ez-geo
+	GIT_REPOSITORY "https://github.com/errata-c/ez-geo.git"
+	GIT_TAG "main"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
 
-if(NOT IS_SUBDIRECTORY)
-	include(FetchContent)
-	FetchContent_Declare(
-		ez-cmake
-		GIT_REPOSITORY "https://github.com/errata-c/ez-cmake.git"
-		GIT_TAG "main"
-	)
-	FetchContent_MakeAvailable(ez-cmake)
-endif()
+FetchContent_MakeAvailable(ez-cmake ez-math ez-geo)
 
 include(CMakeDependentOption)
 
-option(EZ_INTERPOLATE_BUILD_TESTS "Build the basic test executables" OFF)
-cmake_dependent_option(EZ_INTERPOLATE_BUILD_GUI_TESTS "Build the gui based test executables" OFF EZ_INTERPOLATE_BUILD_TESTS OFF)
 set(EZ_INTERPOLATE_CONFIG_DIR "share/ez-interpolate" CACHE STRING "The relative directory to install package config files.")
 
-find_package(ez-math CONFIG REQUIRED)
-find_package(ez-geo CONFIG REQUIRED)
 
 add_library(interpolate INTERFACE)
 target_include_directories(interpolate INTERFACE 
@@ -39,11 +44,14 @@ target_compile_features(interpolate INTERFACE cxx_std_17)
 
 add_library(ez::interpolate ALIAS interpolate)
 
-if(EZ_INTERPOLATE_BUILD_TESTS)
-	add_subdirectory("tests")
-endif()
 
-if(NOT IS_SUBDIRECTORY)
+if(PROJECT_IS_TOP_LEVEL)
+	include(CTest)
+	cmake_dependent_option(EZ_INTERPOLATE_BUILD_GUI_TESTS "Build the gui based test executables" OFF BUILD_TESTING OFF)
+	if(BUILD_TESTING)
+		add_subdirectory("tests")
+	endif()
+
 	install(
 		DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 		TYPE INCLUDE

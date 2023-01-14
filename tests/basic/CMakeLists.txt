@@ -1,8 +1,21 @@
-cmake_minimum_required(VERSION 3.16)
-project(EZ_INTERPOLATE_BASIC_TESTS)
+cmake_minimum_required(VERSION 3.24)
 
-find_package(fmt CONFIG REQUIRED)
-find_package(Catch2 CONFIG REQUIRED)
+include(FetchContent)
+FetchContent_Declare(
+	fmt
+	GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
+	GIT_TAG "9.1.0"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	Catch2
+	GIT_REPOSITORY "https://github.com/catchorg/Catch2.git"
+	GIT_TAG "v3.2.1"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+
+FetchContent_MakeAvailable(fmt Catch2)
+
 
 add_executable(basic_test 
 	"interpolate.cpp"

@@ -1,14 +1,53 @@
+cmake_minimum_required(VERSION 3.24)
 
-# Components of the gui system, primarily based on imgui for the gui widgets, and nanovg for the vector graphics
-find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
-find_package(imgui CONFIG REQUIRED)
-find_package(ImGui-SFML CONFIG REQUIRED)
-find_package(GLEW CONFIG REQUIRED)
+include(FetchContent)
+FetchContent_Declare(
+	fmt
+	GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
+	GIT_TAG "9.1.0"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	SFML
+	GIT_REPOSITORY "https://github.com/SFML/SFML.git"
+	GIT_TAG "2.5.1"
+	FIND_PACKAGE_ARGS COMPONENTS system window graphics CONFIG REQUIRED
+)
+FetchContent_Declare(
+	imgui
+	GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
+	GIT_TAG "v1.89.2"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	ImGui-SFML
+	GIT_REPOSITORY "https://github.com/eliasdaler/imgui-sfml.git"
+	GIT_TAG "v2.5"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	GLEW
+	GIT_REPOSITORY "https://github.com/nigels-com/glew.git"
+	GIT_TAG "glew-2.2.0"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	ez-input
+	GIT_REPOSITORY "https://github.com/errata-c/ez-input.git"
+	GIT_TAG "main"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+FetchContent_Declare(
+	ez-math
+	GIT_REPOSITORY "https://github.com/errata-c/ez-math.git"
+	GIT_TAG "main"
+	FIND_PACKAGE_ARGS CONFIG REQUIRED
+)
+
+FetchContent_MakeAvailable(fmt SFML imgui ImGui-SFML GLEW ez-input ez-math)
+
+# Nanovg is a problem, it doesn't have a cmake build system.
 find_package(nanovg CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-
-find_package(ez-input CONFIG REQUIRED)
-find_package(ez-math CONFIG REQUIRED)
 
 add_library(gui_test_interface STATIC
 	"core/engine.cpp"
