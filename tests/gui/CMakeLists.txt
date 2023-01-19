@@ -5,43 +5,43 @@ FetchContent_Declare(
 	fmt
 	GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
 	GIT_TAG "9.1.0"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 FetchContent_Declare(
 	SFML
 	GIT_REPOSITORY "https://github.com/SFML/SFML.git"
 	GIT_TAG "2.5.1"
-	FIND_PACKAGE_ARGS COMPONENTS system window graphics CONFIG REQUIRED
+	FIND_PACKAGE_ARGS COMPONENTS system window graphics CONFIG
 )
 FetchContent_Declare(
 	imgui
 	GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
 	GIT_TAG "v1.89.2"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 FetchContent_Declare(
 	ImGui-SFML
 	GIT_REPOSITORY "https://github.com/eliasdaler/imgui-sfml.git"
 	GIT_TAG "v2.5"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 FetchContent_Declare(
 	GLEW
 	GIT_REPOSITORY "https://github.com/nigels-com/glew.git"
 	GIT_TAG "glew-2.2.0"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 FetchContent_Declare(
 	ez-input
 	GIT_REPOSITORY "https://github.com/errata-c/ez-input.git"
 	GIT_TAG "main"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 FetchContent_Declare(
 	ez-math
 	GIT_REPOSITORY "https://github.com/errata-c/ez-math.git"
 	GIT_TAG "main"
-	FIND_PACKAGE_ARGS CONFIG REQUIRED
+	FIND_PACKAGE_ARGS CONFIG
 )
 
 FetchContent_MakeAvailable(fmt SFML imgui ImGui-SFML GLEW ez-input ez-math)
